@@ -1,9 +1,13 @@
 import { test, expect } from 'claude-code/testing'
-import { statoIniziale, scegliIniziale, muovi, azione, efficacia, MAPPA, SPECIE } from '../hooks/gioco.tsx'
+import {
+  statoIniziale, scegliIniziale, muovi, azione, efficacia, scambiaBox, normalizza, portaleAperto, specieDel, catalogoDel, usaCura, tasto, compraCura, CURA_PREZZO, SUPER_PREZZO, CENTRO,
+  MAPPA, MONDI, SPECIE,
+} from '../hooks/gioco.tsx'
 
 test('la mappa è rettangolare e ogni specie ha una mossa', () => {
-  for (const riga of MAPPA) expect(riga.length).toBe(MAPPA[0]!.length)
-  expect(Object.keys(SPECIE).length).toBe(9)
+  for (const m of MONDI) for (const riga of m.mappa) expect(riga.length).toBe(MAPPA[0]!.length)
+  expect(specieDel(0).length).toBe(9)
+  expect(specieDel(1).length).toBe(9)
 })
 
 test('i tipi si battono a vicenda in cerchio', () => {
@@ -35,6 +39,95 @@ test('le mura bloccano il passo', () => {
   s = muovi({ ...s, x: 1, y: 1 }, -1, 0)
   expect(s.x).toBe(1)
   expect(prima.x).toBe(3)
+})
+
+test('sconfiggere un Mostrino nuovo lo registra nel catalogo', () => {
+  let s = scegliIniziale(statoIniziale(), 0)
+  s = { ...s, modo: 'lotta', nemico: { sp: 'piumino', lvl: 2, xp: 0, hp: 1 } }
+  s = azione(s, 0, () => 0.5)
+  expect(s.modo).toBe('mappa')
+  expect(s.catalogo).toContain('piumino')
+})
+
+test('squadra di 3 al massimo, le catture in più vanno nel box', () => {
+  let s = scegliIniziale(statoIniziale(), 0)
+  for (const sp of ['piumino', 'zampetto', 'ondina']) {
+    s = { ...s, modo: 'lotta', nemico: { sp, lvl: 3, xp: 0, hp: 1 } }
+    s = azione(s, 2, () => 0)
+  }
+  expect(s.squadra.length).toBe(3)
+  expect(s.box.map(m => m.sp)).toEqual(['ondina'])
+  s = scambiaBox(s)
+  expect(s.squadra[2]!.sp).toBe('ondina')
+  expect(s.box.map(m => m.sp)).toEqual(['zampetto'])
+})
+
+test('il portale si apre col catalogo della Prateria completo', () => {
+  let s = scegliIniziale(statoIniziale(), 0)
+  s = { ...s, x: 17, y: 8 }
+  expect(muovi(s, 1, 0).x).toBe(17)
+  s = { ...s, catalogo: specieDel(0) }
+  expect(portaleAperto(s)).toBe(true)
+  expect(catalogoDel(s)).toEqual({ presi: 9, tot: 9 })
+  s = muovi(s, 1, 0, () => 0.99)
+  expect(s.mondo).toBe(1)
+  expect(catalogoDel(s)).toEqual({ presi: 9, tot: 18 })
+})
+
+test('le partite vecchie si caricano col box', () => {
+  const vecchia: any = { ...scegliIniziale(statoIniziale(), 0) }
+  delete vecchia.box
+  delete vecchia.mondo
+  vecchia.squadra = ['piumino', 'zampetto', 'ondina', 'gelino'].map(sp => ({ sp, lvl: 3, xp: 0, hp: 5 }))
+  const s = normalizza(vecchia)
+  expect(s.squadra.length).toBe(3)
+  expect(s.box.length).toBe(1)
+  expect(s.mondo).toBe(0)
+})
+
+test('C cura solo se ci sono cure nell inventario', () => {
+  let s = scegliIniziale(statoIniziale(), 0)
+  s = { ...s, squadra: [{ ...s.squadra[0]!, hp: 5 }] }
+  const senza = usaCura({ ...s, cure: 0 })
+  expect(senza.squadra[0]!.hp).toBe(5)
+  const con = usaCura({ ...s, cure: 1 })
+  expect(con.squadra[0]!.hp).toBe(25)
+  expect(con.cure).toBe(0)
+  const piena = scegliIniziale(statoIniziale(), 0)
+  expect(usaCura(piena).cure).toBe(piena.cure)
+})
+
+test('le lotte danno monete e al Centro cure si comprano cure', () => {
+  let s = scegliIniziale(statoIniziale(), 0)
+  s = { ...s, modo: 'lotta', nemico: { sp: 'piumino', lvl: 4, xp: 0, hp: 1 } }
+  s = azione(s, 0, () => 0.5)
+  expect(s.monete).toBe(8)
+  expect(compraCura({ ...s, monete: CURA_PREZZO }).cure).toBe(s.cure)
+  const centro = { ...s, x: CENTRO.x, y: CENTRO.y, monete: CURA_PREZZO }
+  const dopo = compraCura(centro)
+  expect(dopo.cure).toBe(s.cure + 1)
+  expect(dopo.monete).toBe(0)
+  expect(compraCura({ ...centro, monete: 1 }).cure).toBe(s.cure)
+})
+
+test('le super cure si comprano solo nelle Vette Gelate e ridanno 50 PS', () => {
+  const s = scegliIniziale(statoIniziale(), 0)
+  const centro = { ...s, x: CENTRO.x, y: CENTRO.y, monete: SUPER_PREZZO }
+  expect(compraCura(centro, true).cureForti).toBe(0)
+  const vette = compraCura({ ...centro, mondo: 1 }, true)
+  expect(vette.cureForti).toBe(1)
+  expect(vette.monete).toBe(0)
+  const ferito = { ...vette, squadra: [{ ...vette.squadra[0]!, lvl: 20, hp: 10 }] }
+  const curato = usaCura(ferito, () => 0.5, true)
+  expect(curato.squadra[0]!.hp).toBe(60)
+  expect(curato.cureForti).toBe(0)
+  expect(curato.cure).toBe(ferito.cure)
+})
+
+test('X usa la super cura anche in lotta', () => {
+  let s = scegliIniziale(statoIniziale(), 0)
+  s = { ...s, cureForti: 1, modo: 'lotta', nemico: { sp: 'piumino', lvl: 2, xp: 0, hp: 20 }, squadra: [{ ...s.squadra[0]!, hp: 5 }] }
+  expect(tasto(s, { key: 'x' }).cureForti).toBe(0)
 })
 
 for (const surface of ['terminal', 'desktop'] as const) {
