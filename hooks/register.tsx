@@ -7,6 +7,8 @@ import { svgPer } from './grafica.ts'
 const PANE = 'mostrini'
 const TITLE = 'Mostrini'
 const SAVE_KEY = 'salvataggio'
+// Se vale false il pannello non si apre da solo quando mandi un prompt.
+const AUTO_KEY = 'apertura-automatica'
 
 // L'ultimo stato del gioco, per disegnarlo in pixel art nell'app desktop.
 const vista = atom({ plugin: 'mostrini', key: 'vista' } as const, null)
@@ -15,16 +17,37 @@ export const register: Register = on => {
   on('session.start', async ($, e, next) => {
     await $.command.register({
       name: 'mostrini',
-      description: 'Apri il gioco Mostrini in un pannello mentre aspetti',
+      description: 'Apri il gioco Mostrini in un pannello mentre aspetti (auto: accende o spegne l\'apertura automatica)',
     })
 
     return next(e)
   })
 
-  on('command.run', { command: 'mostrini' }, async $ => {
+  on('command.run', { command: 'mostrini' }, async ($, e) => {
+    if (e.args.trim() === 'auto') {
+      const attiva = (await $.store.get(AUTO_KEY)) === false
+      await $.store.set(AUTO_KEY, attiva)
+
+      return {
+        text: attiva
+          ? 'Mostrini si aprirà da solo ogni volta che mandi un prompt.'
+          : 'Mostrini non si aprirà più da solo: usa /mostrini per aprirlo.',
+      }
+    }
     await $.ui.open({ id: PANE, title: TITLE, focus: true })
 
     return { text: 'Mostrini aperto. Clicca sul pannello per giocare.' }
+  })
+
+  // Mentre Claude lavora i comandi aspettano in coda: il pannello si apre da solo
+  // appena mandi un prompt, senza togliere il cursore dalla casella.
+  on('prompt.submit', async ($, e, next) => {
+    const risposta = await next(e)
+    if (!e.command && (await $.store.get(AUTO_KEY)) !== false) {
+      void $.ui.open({ id: PANE, title: TITLE })
+    }
+
+    return risposta
   })
 
   // Il gioco salva da solo: la partita resta anche tra una sessione e l'altra.
