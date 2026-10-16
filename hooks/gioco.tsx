@@ -180,6 +180,7 @@ export function normalizza(salvato: Partial<Stato>): Stato {
     modo: s.modo === 'lotta' ? 'mappa' : s.modo,
     nemico: null,
     lancio: false,
+    scambio: null,
     squadra,
     box: [...box, ...s.squadra.slice(SQUADRA_MAX)],
     mondo: MONDI[s.mondo ?? 0] ? (s.mondo ?? 0) : 0,
@@ -413,17 +414,56 @@ export function ruotaSquadra(s: Stato): Stato {
   return conLog({ ...s, squadra }, `In testa ora c'è ${nome(squadra[0])}.`)
 }
 
-// B: il primo del box entra in squadra al posto dell'ultimo, che va in fondo al box.
-export function scambiaBox(s: Stato): Stato {
-  if (s.box.length === 0) return conLog(s, 'Il box è vuoto: cattura altri Mostrini con le sfere.')
-  const entra = s.box[0]!
-  if (s.squadra.length < SQUADRA_MAX) {
-    return conLog({ ...s, squadra: [...s.squadra, entra], box: s.box.slice(1) }, `${nome(entra)} entra in squadra.`)
-  }
-  const esce = s.squadra[s.squadra.length - 1]!
-  const squadra = [...s.squadra.slice(0, -1), entra]
+// B apre lo scambio col box: prima scegli chi entra (1-9 nel box), poi chi esce dalla squadra (1-3).
+// Con la squadra non piena il Mostrino scelto entra senza che nessuno esca.
+export const PER_PAGINA = 9
 
-  return conLog({ ...s, squadra, box: [...s.box.slice(1), esce] }, `${nome(entra)} entra in squadra, ${nome(esce)} va nel box.`)
+export function apriScambio(s: Stato): Stato {
+  if (s.box.length === 0) return conLog(s, 'Il box è vuoto: cattura altri Mostrini con le sfere.')
+
+  return { ...s, scambio: { entra: null, pagina: 0 } }
+}
+
+export function scambia(s: Stato, entra: number, esce: number | null): Stato {
+  const nuovo = s.box[entra]
+  if (!nuovo) return s
+  const box = s.box.filter((_, i) => i !== entra)
+  if (esce === null || s.squadra.length < SQUADRA_MAX) {
+    return conLog({ ...s, scambio: null, squadra: [...s.squadra, nuovo], box }, `${nome(nuovo)} entra in squadra.`)
+  }
+  const vecchio = s.squadra[esce]
+  if (!vecchio) return s
+  const squadra = s.squadra.map((m, i) => (i === esce ? nuovo : m))
+
+  return conLog(
+    { ...s, scambio: null, squadra, box: [...box, vecchio] },
+    `${nome(nuovo)} entra in squadra al posto di ${nome(vecchio)}, che va nel box.`,
+  )
+}
+
+function tastoScambio(s: Stato, key: string): Stato {
+  const sc = s.scambio!
+  if (key === 'b' || key === '0' || key === 'backspace') return { ...s, scambio: null }
+  const n = Number(key)
+  if (sc.entra === null) {
+    const pagine = Math.ceil(s.box.length / PER_PAGINA)
+    if (key === 'down' || key === 's' || key === 'right' || key === 'd') {
+      return { ...s, scambio: { ...sc, pagina: (sc.pagina + 1) % pagine } }
+    }
+    if (key === 'up' || key === 'w' || key === 'left' || key === 'a') {
+      return { ...s, scambio: { ...sc, pagina: (sc.pagina + pagine - 1) % pagine } }
+    }
+    if (!Number.isInteger(n) || n < 1 || n > PER_PAGINA) return s
+    const i = sc.pagina * PER_PAGINA + n - 1
+    if (!s.box[i]) return s
+    // Squadra non piena: entra subito.
+    if (s.squadra.length < SQUADRA_MAX) return scambia(s, i, null)
+
+    return { ...s, scambio: { ...sc, entra: i } }
+  }
+  if (!Number.isInteger(n) || n < 1 || n > s.squadra.length) return s
+
+  return scambia(s, sc.entra, n - 1)
 }
 
 export function tasto(s: Stato, k: ClientKeyEvent): Stato {
@@ -434,12 +474,13 @@ export function tasto(s: Stato, k: ClientKeyEvent): Stato {
     return i >= 0 ? scegliIniziale(s, i) : s
   }
   if (s.modo === 'mappa') {
+    if (s.scambio) return tastoScambio(s, key)
     if (key === 'up' || key === 'w') return muovi(s, 0, -1)
     if (key === 'down' || key === 's') return muovi(s, 0, 1)
     if (key === 'left' || key === 'a') return muovi(s, -1, 0)
     if (key === 'right' || key === 'd') return muovi(s, 1, 0)
     if (key === 'tab' || key === 'q') return ruotaSquadra(s)
-    if (key === 'b') return scambiaBox(s)
+    if (key === 'b') return apriScambio(s)
     if (key === 'c') return usaCura(s)
     if (key === 'x') return usaCura(s, Math.random, true)
     if (key === 'm') return compraCura(s)
@@ -667,13 +708,43 @@ const Gioco: ClientModule<any, Stato> = (props: Props, surface) => {
         })}
       </Box>
       {registro}
-      {s.box.length > 0 && <Text mono dimColor>Box: {s.box.map(m => SPECIE[m.sp].nome + ' Lv' + m.lvl).join(', ')}</Text>}
-      {alCentro(s) && (
+      {s.scambio ? (
+        <Box flexDirection="column" marginTop={1}>
+          {s.scambio.entra === null ? (
+            <Box flexDirection="column">
+              <Text mono bold color={COL.io}>
+                Box: chi entra in squadra? Premi il numero
+                {s.box.length > PER_PAGINA ? ` · pagina ${s.scambio.pagina + 1}/${Math.ceil(s.box.length / PER_PAGINA)} (frecce)` : ''}
+              </Text>
+              {s.box.slice(s.scambio.pagina * PER_PAGINA, (s.scambio.pagina + 1) * PER_PAGINA).map((m, i) => (
+                <Text mono key={'b' + i}>
+                  <Text mono bold>{i + 1}</Text> <Text mono color={COLORE_TIPO[SPECIE[m.sp].tipo]}>{SPECIE[m.sp].nome}</Text> Lv{m.lvl} {m.hp}/{maxHp(m)}
+                </Text>
+              ))}
+            </Box>
+          ) : (
+            <Box flexDirection="column">
+              <Text mono bold color={COL.io}>
+                Entra {SPECIE[s.box[s.scambio.entra]!.sp].nome}: chi esce dalla squadra? Premi il numero
+              </Text>
+              {s.squadra.map((m, i) => (
+                <Text mono key={'q' + i}>
+                  <Text mono bold>{i + 1}</Text> <Text mono color={COLORE_TIPO[SPECIE[m.sp].tipo]}>{SPECIE[m.sp].nome}</Text> Lv{m.lvl} {m.hp}/{maxHp(m)}
+                </Text>
+              ))}
+            </Box>
+          )}
+          <Text mono dimColor>B o 0 annulla lo scambio</Text>
+        </Box>
+      ) : (
+        s.box.length > 0 && <Text mono dimColor>Box: {s.box.map(m => SPECIE[m.sp].nome + ' Lv' + m.lvl).join(', ')}</Text>
+      )}
+      {alCentro(s) && !s.scambio && (
         <Text mono color={COL.centro}>
           Negozio: M cura +20 PS ({CURA_PREZZO} monete){s.mondo >= 1 ? ` · N super cura +50 PS (${SUPER_PREZZO} monete)` : ''} · hai {s.monete} monete
         </Text>
       )}
-      <Text mono dimColor>Frecce/WASD muovi · Q cambia capofila · B scambia col box{s.cure > 0 ? ` · C cura (${s.cure})` : ''}{s.cureForti > 0 ? ` · X super cura (${s.cureForti})` : ''}{portaleAperto(s) ? ' · P portale' : ''}</Text>
+      {!s.scambio && <Text mono dimColor>Frecce/WASD muovi · Q cambia capofila · B scambia col box{s.cure > 0 ? ` · C cura (${s.cure})` : ''}{s.cureForti > 0 ? ` · X super cura (${s.cureForti})` : ''}{portaleAperto(s) ? ' · P portale' : ''}</Text>}
     </Box>
   )
 }
