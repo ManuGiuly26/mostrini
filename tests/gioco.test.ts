@@ -152,3 +152,25 @@ for (const surface of ['terminal', 'desktop'] as const) {
     await ui.unmount()
   })
 }
+
+test('sul telefono si gioca con i pulsanti, un passo per tocco', async ($, on) => {
+  const salvati: any[] = []
+  on('store.get', async () => ({ value: undefined }))
+  on('store.set', async (_$, e) => {
+    salvati.push((e as any).value)
+    return { value: undefined }
+  })
+  const ui = await ($.ui as any).mount({
+    plugin: 'mostrini',
+    surface: 'mobile',
+    component: 'Pane',
+    requestId: 'mostrini',
+    props: { title: 'Mostrini', isFocused: true, bodyColumns: 40, placement: 'dock' },
+  })
+  await ui.press({ key: 't1' })
+  const scelto = salvati.at(-1)
+  expect(scelto.squadra[0].sp).toBe('braciotto')
+  await ui.press({ key: 'tleft' })
+  expect(salvati.at(-1).x).toBe(scelto.x - 1)
+  await ui.unmount()
+})
