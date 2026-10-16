@@ -1,6 +1,6 @@
 import { test, expect } from 'claude-code/testing'
 import {
-  statoIniziale, scegliIniziale, muovi, azione, efficacia, scambiaBox, normalizza, portaleAperto, specieDel, catalogoDel, usaCura, tasto, compraCura, CURA_PREZZO, SUPER_PREZZO, CENTRO,
+  statoIniziale, scegliIniziale, muovi, azione, efficacia, apriScambio, normalizza, portaleAperto, specieDel, catalogoDel, usaCura, tasto, compraCura, CURA_PREZZO, SUPER_PREZZO, CENTRO,
   MAPPA, MONDI, SPECIE,
 } from '../hooks/gioco.tsx'
 
@@ -57,9 +57,19 @@ test('squadra di 3 al massimo, le catture in più vanno nel box', () => {
   }
   expect(s.squadra.length).toBe(3)
   expect(s.box.map(m => m.sp)).toEqual(['ondina'])
-  s = scambiaBox(s)
-  expect(s.squadra[2]!.sp).toBe('ondina')
-  expect(s.box.map(m => m.sp)).toEqual(['zampetto'])
+  // B, poi 1 sceglie Ondina nel box, poi 2 fa uscire Piumino
+  s = apriScambio(s)
+  s = tasto(s, { key: '1' })
+  expect(s.scambio?.entra).toBe(0)
+  expect(s.squadra.length).toBe(3)
+  s = tasto(s, { key: '2' })
+  expect(s.scambio).toBeNull()
+  expect(s.squadra.map(m => m.sp)).toEqual(['braciotto', 'ondina', 'zampetto'])
+  expect(s.box.map(m => m.sp)).toEqual(['piumino'])
+  // B e poi 0 annulla senza cambiare niente
+  const prima = s
+  s = tasto(tasto(apriScambio(s), { key: '0' }), { key: 'left' })
+  expect(s.squadra).toEqual(prima.squadra)
 })
 
 test('il portale si apre col catalogo della Prateria completo', () => {
