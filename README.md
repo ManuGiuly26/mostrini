@@ -58,3 +58,7 @@ Completa il catalogo della Prateria (9/9) per aprire il portale verso le Vette G
 **Sul telefono non si può giocare:** l'app Claude per telefono non mostra il pannello di Mostrini. Se scrivi `/mostrini` dal telefono te lo dice; gioca dal computer.
 
 Funziona nel terminale e nell'app desktop di Claude, non sul telefono né in VS Code.
+
+## Licenza
+
+MIT, vedi il file `LICENSE`. Creato da ManuGiuly26.
