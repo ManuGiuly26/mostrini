@@ -23,6 +23,8 @@ export type Stato = {
   scelta: number
   // la sfera appena lanciata non ha preso il Mostrino: il disegno la mostra a terra
   lancio?: boolean
+  // lo scambio col box aperto con B: entra è il Mostrino del box già scelto (indice), pagina la decina mostrata
+  scambio?: { entra: number | null; pagina: number } | null
 }
 
 declare module 'claude-code' {
