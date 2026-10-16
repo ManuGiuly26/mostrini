@@ -55,4 +55,6 @@ Cammina nell'erba alta per incontrare i Mostrini selvatici. Indeboliscili prima 
 
 Completa il catalogo della Prateria (9/9) per aprire il portale verso le Vette Gelate. Puoi attraversarlo in tutte e due le direzioni.
 
-Funziona nel terminale e nell'app desktop di Claude, non nell'app mobile né in VS Code.
+**Sul telefono** (app Claude collegata a una sessione con Mostrini) non c'è la tastiera: sotto la pixel art ci sono i pulsanti. Le frecce fanno un passo per ogni tocco; in lotta ci sono Botta, Mossa, Sfera, Scappa e le cure; sul Centro cure compaiono i pulsanti per comprare. La partita è la stessa del computer.
+
+Funziona nel terminale, nell'app desktop di Claude e sul telefono, non in VS Code.
