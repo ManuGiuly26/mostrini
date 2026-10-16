@@ -136,20 +136,18 @@ export const register: Register = on => {
   })
 
   on('ui.render', { component: 'Pane', requestId: PANE }, async ($, e) => {
-    const { Box, Text, Client, Svg, Button } = $.ui.resolve(e) as any
+    const el = $.ui.resolve(e) as any
+    const { Box, Text, Svg, Button } = el
     const save = (await $.store.get(SAVE_KEY)) ?? null
-    // Il telefono non ha la tastiera (né Client): si gioca coi pulsanti.
+    // Il telefono non ha la tastiera: si gioca coi pulsanti.
     if (e.surface === 'mobile') return telefono($, { Box, Text, Svg, Button }, save as Stato | null)
-    if (!Client) {
-      if (!Svg || !Button) {
-        return (
-          <Box flexDirection="column">
-            <Text>Mostrini si gioca nel terminale, nell'app desktop o sul telefono.</Text>
-          </Box>
-        )
-      }
-
-      return telefono($, { Box, Text, Svg, Button }, save as Stato | null)
+    // Il gioco col pannello gira solo nel terminale e nell'app desktop.
+    if (e.surface !== 'terminal' && e.surface !== 'desktop') {
+      return (
+        <Box flexDirection="column">
+          <Text>Mostrini si gioca nel terminale o nell'app desktop di Claude.</Text>
+        </Box>
+      )
     }
     // Il terminale disegna l'arte ASCII; l'app desktop ha l'SVG per la pixel art.
     const grafica = !!Svg
@@ -159,7 +157,7 @@ export const register: Register = on => {
     return (
       <Box flexDirection="column" flexGrow={1}>
         {disegno && <Svg source={disegno.source} alt={disegno.alt} />}
-        <Client key="gioco" module="./gioco.tsx" props={{ save, grafica }} flexGrow={1} />
+        <el.Client key="gioco" module="./gioco.tsx" props={{ save, grafica }} flexGrow={1} />
       </Box>
     )
   })
