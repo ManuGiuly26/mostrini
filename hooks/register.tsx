@@ -13,10 +13,12 @@ const AUTO_KEY = 'apertura-automatica'
 
 // L'ultimo stato del gioco, per disegnarlo in pixel art nell'app desktop.
 const vista = atom({ plugin: 'mostrini', key: 'vista' } as const, null)
+// Dove il pannello non si apre (l'app del telefono) il gioco prova a mostrarsi sopra il prompt.
+const banda = atom({ plugin: 'mostrini', key: 'banda' } as const, false)
 
 // Sul telefono non c'è la tastiera: il gioco gira qui e ogni pulsante è un tasto.
 // Un tocco su una freccia è un passo.
-async function telefono($: any, el: any, save: Stato | null) {
+async function telefono($: any, el: any, save: Stato | null, chiudi?: () => void) {
   const { Box, Text, Svg, Button } = el
   const s: Stato = (await read($, vista)) ?? (save && save.modo ? normalizza(save) : statoIniziale())
   const premi = (key: string) => async () => {
@@ -72,6 +74,7 @@ async function telefono($: any, el: any, save: Stato | null) {
           {r}
         </Text>
       ))}
+      {chiudi && <Button key="chiudi" label="Chiudi Mostrini" onPress={chiudi} />}
     </Box>
   )
 }
@@ -97,7 +100,16 @@ export const register: Register = on => {
           : 'Mostrini non si aprirà più da solo: usa /mostrini per aprirlo.',
       }
     }
-    await $.ui.open({ id: PANE, title: TITLE, focus: true })
+    const aperto = await $.ui.open({ id: PANE, title: TITLE, focus: true })
+    if (!aperto.isPlaced) {
+      // Il pannello non si vede (succede nell'app del telefono): si prova sopra il prompt.
+      await update($, banda, () => true)
+
+      return {
+        text: 'Su questo dispositivo il pannello di Mostrini non si può mostrare. Provo ad aprirlo sopra la casella del prompt: se non lo vedi nemmeno lì, qui Mostrini non si può giocare.',
+      }
+    }
+    await update($, banda, () => false)
 
     return { text: 'Mostrini aperto. Clicca sul pannello per giocare.' }
   })
@@ -125,6 +137,15 @@ export const register: Register = on => {
     }
 
     return next(e)
+  })
+
+  on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
+    if (!(await read($, banda))) return next(e)
+    const { Box, Text, Svg, Button } = $.ui.resolve(e) as any
+    if (!Svg || !Button) return next(e)
+    const save = (await $.store.get(SAVE_KEY)) ?? null
+
+    return telefono($, { Box, Text, Svg, Button }, save as Stato | null, () => void update($, banda, () => false))
   })
 
   on('ui.render', { component: 'Pane', requestId: PANE }, async ($, e) => {
