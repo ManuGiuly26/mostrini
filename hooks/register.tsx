@@ -3,6 +3,7 @@ import type { Register } from 'claude-code'
 
 import type { Stato } from '../types'
 import { svgPer } from './grafica.ts'
+import { tasto, normalizza, statoIniziale, alCentro, SPECIE, maxHp } from './gioco.tsx'
 
 const PANE = 'mostrini'
 const TITLE = 'Mostrini'
@@ -12,6 +13,68 @@ const AUTO_KEY = 'apertura-automatica'
 
 // L'ultimo stato del gioco, per disegnarlo in pixel art nell'app desktop.
 const vista = atom({ plugin: 'mostrini', key: 'vista' } as const, null)
+
+// Sul telefono non c'è la tastiera: il gioco gira qui e ogni pulsante è un tasto.
+// Un tocco su una freccia è un passo.
+async function telefono($: any, el: any, save: Stato | null) {
+  const { Box, Text, Svg, Button } = el
+  const s: Stato = (await read($, vista)) ?? (save && save.modo ? normalizza(save) : statoIniziale())
+  const premi = (key: string) => async () => {
+    const prima = (await read($, vista)) ?? s
+    const dopo = tasto(prima, { key })
+    if (dopo === prima) return
+    await update($, vista, () => dopo)
+    if (dopo.modo !== 'lotta') await $.store.set(SAVE_KEY, dopo)
+  }
+  const tasti = (voci: [string, string][]) => (
+    <Box flexDirection="row" flexWrap="wrap">
+      {voci.map(([key, label]) => (
+        <Button key={'t' + key} label={label} onPress={premi(key)} />
+      ))}
+    </Box>
+  )
+  const disegno = svgPer(s)
+  const io = s.squadra[0]
+  let comandi
+  if (s.modo === 'inizio') {
+    comandi = tasti([['1', '1 Braciotto'], ['2', '2 Goccetto'], ['3', '3 Germoglio']])
+  } else if (s.modo === 'lotta') {
+    const voci: [string, string][] = [['1', 'Botta'], ['2', 'Mossa'], ['3', `Sfera (${s.sfere})`], ['4', 'Scappa']]
+    if (s.cure > 0) voci.push(['c', `Cura (${s.cure})`])
+    if (s.cureForti > 0) voci.push(['x', `Super cura (${s.cureForti})`])
+    comandi = tasti(voci)
+  } else {
+    const extra: [string, string][] = [['q', 'Capofila'], ['b', 'Box']]
+    if (s.cure > 0) extra.push(['c', `Cura (${s.cure})`])
+    if (s.cureForti > 0) extra.push(['x', `Super (${s.cureForti})`])
+    if (alCentro(s)) extra.push(['m', 'Compra cura'])
+    if (alCentro(s) && s.mondo >= 1) extra.push(['n', 'Compra super'])
+    comandi = (
+      <Box flexDirection="column">
+        {tasti([['up', '↑']])}
+        {tasti([['left', '←'], ['down', '↓'], ['right', '→']])}
+        {tasti(extra)}
+      </Box>
+    )
+  }
+
+  return (
+    <Box flexDirection="column">
+      <Svg source={disegno.source} alt={disegno.alt} />
+      {comandi}
+      {io && s.modo === 'mappa' && (
+        <Text dimColor>
+          {SPECIE[io.sp]!.nome} Lv{io.lvl} {io.hp}/{maxHp(io)} · Monete {s.monete}
+        </Text>
+      )}
+      {s.log.map((r, i) => (
+        <Text key={'l' + i} dimColor={i < s.log.length - 1}>
+          {r}
+        </Text>
+      ))}
+    </Box>
+  )
+}
 
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
@@ -65,15 +128,21 @@ export const register: Register = on => {
   })
 
   on('ui.render', { component: 'Pane', requestId: PANE }, async ($, e) => {
-    const { Box, Text, Client, Svg } = $.ui.resolve(e) as any
-    if (!Client) {
-      return (
-        <Box flexDirection="column">
-          <Text>Mostrini si gioca nel terminale o nell'app desktop.</Text>
-        </Box>
-      )
-    }
+    const { Box, Text, Client, Svg, Button } = $.ui.resolve(e) as any
     const save = (await $.store.get(SAVE_KEY)) ?? null
+    // Il telefono non ha la tastiera (né Client): si gioca coi pulsanti.
+    if (e.surface === 'mobile') return telefono($, { Box, Text, Svg, Button }, save as Stato | null)
+    if (!Client) {
+      if (!Svg || !Button) {
+        return (
+          <Box flexDirection="column">
+            <Text>Mostrini si gioca nel terminale, nell'app desktop o sul telefono.</Text>
+          </Box>
+        )
+      }
+
+      return telefono($, { Box, Text, Svg, Button }, save as Stato | null)
+    }
     // Il terminale disegna l'arte ASCII; l'app desktop ha l'SVG per la pixel art.
     const grafica = !!Svg
     const stato = grafica ? await read($, vista) : null
