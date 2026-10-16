@@ -17,6 +17,7 @@ Mostrini è un mini gioco di creature da catturare che si apre in un pannello de
 - **Livelli ed esperienza per tutta la squadra:** chi lotta prende tutta l'esperienza, gli altri Mostrini in forma la metà
 - **Monete:** ogni lotta vinta ti dà monete (il doppio del livello del Mostrino sconfitto)
 - **Cure nell'inventario:** parti con 2 cure (massimo 5). Puoi comprarne altre al Centro cure per 15 monete l'una (tasto `M` quando ci sei sopra), oppure trovarle: a volte un Mostrino sconfitto ne lascia una. Premi `C` per ridare 20 PS al Mostrino in testa: funziona solo se hai almeno una cura, e in lotta ti costa il turno.
+- **Super cure nelle Vette Gelate:** quando arrivi nel secondo mondo, il Centro cure vende anche la super cura, con il liquido viola. Ridà 50 PS e costa 40 monete (tasto `N` sul Centro cure). Si usa con `X` e se ne tengono al massimo 5.
 - **Centro cure** (la casetta con la croce) in ogni mondo per curare tutta la squadra e ricaricare le sfere
 - **Salvataggio automatico** tra una sessione e l'altra
 
@@ -45,8 +46,8 @@ Scrivi `/mostrini` in una sessione di Claude Code, poi clicca sul pannello che s
 | Dove | Tasti |
 | --- | --- |
 | Inizio | `1` `2` `3` per scegliere lo starter |
-| Mappa | Frecce o `WASD` per muoverti, `Q` per cambiare il Mostrino in testa, `B` per scambiare l'ultimo della squadra con il primo del box, `C` per usare una cura, `M` sul Centro cure per comprarne una |
-| Lotta | `1` Botta, `2` mossa del tipo, `3` Sfera, `4` Scappa, `C` cura, oppure frecce + `Invio` |
+| Mappa | Frecce o `WASD` per muoverti, `Q` per cambiare il Mostrino in testa, `B` per scambiare l'ultimo della squadra con il primo del box, `C` per usare una cura, `X` per usare una super cura, `M` sul Centro cure per comprare una cura, `N` per comprare una super cura (solo nelle Vette Gelate) |
+| Lotta | `1` Botta, `2` mossa del tipo, `3` Sfera, `4` Scappa, `C` cura, `X` super cura, oppure frecce + `Invio` |
 
 Cammina nell'erba alta per incontrare i Mostrini selvatici. Indeboliscili prima di lanciare la sfera: più sono stanchi, più è facile catturarli. Quando finisci le sfere o la squadra è a terra, passa dal Centro cure (la casetta con la croce).
 
