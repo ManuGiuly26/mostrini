@@ -28,7 +28,6 @@ export type Stato = {
 declare module 'claude-code' {
   interface PluginState {
     // Lo stato che il gioco manda al pannello, per disegnarlo in pixel art nell'app desktop.
-    // banda: il gioco si mostra sopra il prompt dove il pannello non si apre (telefono).
-    mostrini: { vista: Stato | null; banda: boolean }
+    mostrini: { vista: Stato | null }
   }
 }
