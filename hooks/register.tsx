@@ -1,8 +1,15 @@
+import { atom, read, update } from 'claude-code'
 import type { Register } from 'claude-code'
+
+import type { Stato } from '../types'
+import { svgPer } from './grafica.ts'
 
 const PANE = 'mostrini'
 const TITLE = 'Mostrini'
 const SAVE_KEY = 'salvataggio'
+
+// L'ultimo stato del gioco, per disegnarlo in pixel art nell'app desktop.
+const vista = atom({ plugin: 'mostrini', key: 'vista' } as const, null)
 
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
@@ -22,9 +29,11 @@ export const register: Register = on => {
 
   // Il gioco salva da solo: la partita resta anche tra una sessione e l'altra.
   on('ui.message', { requestId: PANE }, async ($, e, next) => {
-    const data = e.data as { type?: string; save?: unknown } | null
-    if (data && data.type === 'save' && data.save) {
-      await $.store.set(SAVE_KEY, data.save)
+    const data = e.data as { type?: string; stato?: Stato; salva?: boolean } | null
+    if (data && data.type === 'vista' && data.stato) {
+      const stato = data.stato
+      await update($, vista, () => stato)
+      if (data.salva) await $.store.set(SAVE_KEY, stato)
     } else if (data && data.type === 'reset') {
       await $.store.delete(SAVE_KEY)
     }
@@ -33,7 +42,7 @@ export const register: Register = on => {
   })
 
   on('ui.render', { component: 'Pane', requestId: PANE }, async ($, e) => {
-    const { Box, Text, Client } = $.ui.resolve(e) as any
+    const { Box, Text, Client, Svg } = $.ui.resolve(e) as any
     if (!Client) {
       return (
         <Box flexDirection="column">
@@ -42,10 +51,15 @@ export const register: Register = on => {
       )
     }
     const save = (await $.store.get(SAVE_KEY)) ?? null
+    // Il terminale disegna l'arte ASCII; l'app desktop ha l'SVG per la pixel art.
+    const grafica = !!Svg
+    const stato = grafica ? await read($, vista) : null
+    const disegno = stato ? svgPer(stato) : null
 
     return (
       <Box flexDirection="column" flexGrow={1}>
-        <Client key="gioco" module="./gioco.tsx" props={{ save }} flexGrow={1} />
+        {disegno && <Svg source={disegno.source} alt={disegno.alt} />}
+        <Client key="gioco" module="./gioco.tsx" props={{ save, grafica }} flexGrow={1} />
       </Box>
     )
   })
