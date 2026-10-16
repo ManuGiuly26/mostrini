@@ -12,7 +12,7 @@ Mostrini è un mini gioco di creature da catturare che si apre in un pannello de
   - **Prateria:** 9 Mostrini, compreso il raro Scintillo di tipo elettro
   - **Vette Gelate:** 9 Mostrini nuovi, compreso il raro Tuonello, con due tipi in più (ghiaccio e roccia) e avversari più forti. Si sbloccano completando il catalogo della Prateria: si apre un portale viola (`P`) che collega i due mondi.
 - **Catalogo per mondo:** nella Prateria conta i suoi 9 Mostrini, nelle Vette Gelate tutti i 18. Un Mostrino entra nel catalogo appena lo catturi o lo sconfiggi.
-- **Sfere per catturare:** in lotta vedi quante te ne restano. Una squadra può avere fino a **3 Mostrini**: quelli che catturi in più finiscono nel **box** e puoi scambiarli quando vuoi.
+- **Sfere per catturare:** in lotta vedi quante te ne restano. Una squadra può avere fino a **3 Mostrini**: quelli che catturi in più finiscono nel **box**. Con `B` apri il box: premi il numero del Mostrino che vuoi far entrare e poi il numero di quello della squadra che deve uscire (`B` o `0` annulla).
 - **Lotte a turni veloci** con vantaggi di tipo: fuoco batte erba e ghiaccio, erba batte acqua e roccia, acqua batte fuoco e roccia, roccia batte fuoco, ghiaccio ed elettro, ghiaccio batte erba
 - **Livelli ed esperienza per tutta la squadra:** chi lotta prende tutta l'esperienza, gli altri Mostrini in forma la metà
 - **Monete:** ogni lotta vinta ti dà monete (il doppio del livello del Mostrino sconfitto)
@@ -48,7 +48,7 @@ Mentre Claude lavora i comandi aspettano in coda, quindi Mostrini **si apre da s
 | Dove | Tasti |
 | --- | --- |
 | Inizio | `1` `2` `3` per scegliere lo starter |
-| Mappa | Frecce o `WASD` per muoverti, `Q` per cambiare il Mostrino in testa, `B` per scambiare l'ultimo della squadra con il primo del box, `C` per usare una cura, `X` per usare una super cura, `M` sul Centro cure per comprare una cura, `N` per comprare una super cura (solo nelle Vette Gelate) |
+| Mappa | Frecce o `WASD` per muoverti, `Q` per cambiare il Mostrino in testa, `B` per aprire il box e scegliere con i numeri chi entra e chi esce, `C` per usare una cura, `X` per usare una super cura, `M` sul Centro cure per comprare una cura, `N` per comprare una super cura (solo nelle Vette Gelate) |
 | Lotta | `1` Botta, `2` mossa del tipo, `3` Sfera, `4` Scappa, `C` cura, `X` super cura, oppure frecce + `Invio` |
 
 Cammina nell'erba alta per incontrare i Mostrini selvatici. Indeboliscili prima di lanciare la sfera: più sono stanchi, più è facile catturarli. Quando finisci le sfere o la squadra è a terra, passa dal Centro cure (la casetta con la croce).
