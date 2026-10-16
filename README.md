@@ -43,6 +43,8 @@ claude plugin install mostrini --marketplace ManuGiuly26/mostrini
 
 Scrivi `/mostrini` in una sessione di Claude Code, poi clicca sul pannello che si apre.
 
+Mentre Claude lavora i comandi aspettano in coda, quindi Mostrini **si apre da solo ogni volta che mandi un prompt**: il cursore resta nella casella del prompt, clicca sul pannello quando vuoi giocare. Per spegnere (o riaccendere) l'apertura automatica scrivi `/mostrini auto`.
+
 | Dove | Tasti |
 | --- | --- |
 | Inizio | `1` `2` `3` per scegliere lo starter |
