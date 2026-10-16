@@ -59,6 +59,16 @@ Completa il catalogo della Prateria (9/9) per aprire il portale verso le Vette G
 
 Funziona nel terminale e nell'app desktop di Claude, non sul telefono né in VS Code.
 
+## Cosa fa sul tuo computer
+
+Mostrini **non invia dati a nessuno** e non si collega a internet. Quello che fa:
+
+- **Salva la partita** (squadra, box, catalogo, monete, cure) nello spazio di archiviazione locale del plugin, sul tuo computer, così riprendi dove eri rimasto.
+- **Non legge né modifica** i tuoi prompt, la conversazione con Claude, i tuoi file o altri plugin. L'unico gancio sui prompt (`prompt.submit`) si limita ad aprire il pannello del gioco dopo che hai inviato un prompt, e lascia il prompt esattamente com'è. Si spegne con `/mostrini auto`.
+- Aggiunge un solo comando, `/mostrini`, per aprire il pannello (e `/mostrini auto` per accendere o spegnere l'apertura automatica).
+- Disegna la grafica in pixel art con immagini generate dal codice stesso: non scarica nulla.
+- Contiene anche i test del gioco (cartella `tests/`): non fanno parte del gioco e non vengono eseguiti quando giochi.
+
 ## Licenza
 
 MIT, vedi il file `LICENSE`. Creato da ManuGiuly26.
