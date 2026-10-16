@@ -1,5 +1,13 @@
 {
   "name": "mostrini",
-  "owner": { "name": "ManuGiuly26" },
-  "plugins": [{ "name": "mostrini", "source": "./" }]
+  "description": "Mostrini: un mini gioco di creature da catturare, da giocare in un pannello mentre Claude lavora",
+  "owner": {
+    "name": "ManuGiuly26"
+  },
+  "plugins": [
+    {
+      "name": "mostrini",
+      "source": "./"
+    }
+  ]
 }
