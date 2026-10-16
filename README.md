@@ -6,10 +6,18 @@ Mostrini è un mini gioco di creature da catturare che si apre in un pannello de
 
 ## Cosa trovi
 
+- **Grafica in pixel art** nell'app desktop: mappa, lotte e Mostrini disegnati come in un gioco 2D. Nel terminale il gioco resta in stile ASCII.
 - **3 starter tra cui scegliere:** Braciotto (fuoco), Goccetto (acqua) e Germoglio (erba)
-- **9 Mostrini da catturare**, compreso il raro Scintillo di tipo elettro
-- **Lotte a turni veloci** con vantaggi di tipo: fuoco batte erba, erba batte acqua, acqua batte fuoco
-- **Livelli ed esperienza**, una squadra fino a 4 Mostrini e un Centro cure per rimetterti in sesto
+- **2 mondi e 18 Mostrini:**
+  - **Prateria:** 9 Mostrini, compreso il raro Scintillo di tipo elettro
+  - **Vette Gelate:** 9 Mostrini nuovi, compreso il raro Tuonello, con due tipi in più (ghiaccio e roccia) e avversari più forti. Si sbloccano completando il catalogo della Prateria: si apre un portale viola (`P`) che collega i due mondi.
+- **Catalogo per mondo:** nella Prateria conta i suoi 9 Mostrini, nelle Vette Gelate tutti i 18. Un Mostrino entra nel catalogo appena lo catturi o lo sconfiggi.
+- **Sfere per catturare:** in lotta vedi quante te ne restano. Una squadra può avere fino a **3 Mostrini**: quelli che catturi in più finiscono nel **box** e puoi scambiarli quando vuoi.
+- **Lotte a turni veloci** con vantaggi di tipo: fuoco batte erba e ghiaccio, erba batte acqua e roccia, acqua batte fuoco e roccia, roccia batte fuoco, ghiaccio ed elettro, ghiaccio batte erba
+- **Livelli ed esperienza per tutta la squadra:** chi lotta prende tutta l'esperienza, gli altri Mostrini in forma la metà
+- **Monete:** ogni lotta vinta ti dà monete (il doppio del livello del Mostrino sconfitto)
+- **Cure nell'inventario:** parti con 2 cure (massimo 5). Puoi comprarne altre al Centro cure per 15 monete l'una (tasto `M` quando ci sei sopra), oppure trovarle: a volte un Mostrino sconfitto ne lascia una. Premi `C` per ridare 20 PS al Mostrino in testa: funziona solo se hai almeno una cura, e in lotta ti costa il turno.
+- **Centro cure** (la casetta con la croce) in ogni mondo per curare tutta la squadra e ricaricare le sfere
 - **Salvataggio automatico** tra una sessione e l'altra
 
 ## Installazione
@@ -37,9 +45,11 @@ Scrivi `/mostrini` in una sessione di Claude Code, poi clicca sul pannello che s
 | Dove | Tasti |
 | --- | --- |
 | Inizio | `1` `2` `3` per scegliere lo starter |
-| Mappa | Frecce o `WASD` per muoverti, `Q` per cambiare il Mostrino in testa |
-| Lotta | `1` Botta, `2` mossa del tipo, `3` Sfera, `4` Scappa, oppure frecce + `Invio` |
+| Mappa | Frecce o `WASD` per muoverti, `Q` per cambiare il Mostrino in testa, `B` per scambiare l'ultimo della squadra con il primo del box, `C` per usare una cura, `M` sul Centro cure per comprarne una |
+| Lotta | `1` Botta, `2` mossa del tipo, `3` Sfera, `4` Scappa, `C` cura, oppure frecce + `Invio` |
 
-Cammina nell'erba alta (`,,`) per incontrare i Mostrini selvatici. Indeboliscili prima di lanciare la sfera: più sono stanchi, più è facile catturarli. Quando finisci le sfere o la squadra è a terra, passa dal Centro cure (`C`).
+Cammina nell'erba alta per incontrare i Mostrini selvatici. Indeboliscili prima di lanciare la sfera: più sono stanchi, più è facile catturarli. Quando finisci le sfere o la squadra è a terra, passa dal Centro cure (la casetta con la croce).
+
+Completa il catalogo della Prateria (9/9) per aprire il portale verso le Vette Gelate. Puoi attraversarlo in tutte e due le direzioni.
 
 Funziona nel terminale e nell'app desktop di Claude, non nell'app mobile né in VS Code.
