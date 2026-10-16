@@ -13,8 +13,6 @@ const AUTO_KEY = 'apertura-automatica'
 
 // L'ultimo stato del gioco, per disegnarlo in pixel art nell'app desktop.
 const vista = atom({ plugin: 'mostrini', key: 'vista' } as const, null)
-// Dove il pannello non si apre (l'app del telefono) il gioco prova a mostrarsi sopra il prompt.
-const banda = atom({ plugin: 'mostrini', key: 'banda' } as const, false)
 
 // Sul telefono non c'è la tastiera: il gioco gira qui e ogni pulsante è un tasto.
 // Un tocco su una freccia è un passo.
@@ -100,16 +98,14 @@ export const register: Register = on => {
           : 'Mostrini non si aprirà più da solo: usa /mostrini per aprirlo.',
       }
     }
+    // Dal telefono (Remote Control) il pannello non si vede: meglio dirlo subito.
+    if (e.origin.kind === 'bridge') {
+      return { text: 'Mostrini non si può giocare dal telefono: aprilo dal computer, nel terminale o nell\'app desktop di Claude.' }
+    }
     const aperto = await $.ui.open({ id: PANE, title: TITLE, focus: true })
     if (!aperto.isPlaced) {
-      // Il pannello non si vede (succede nell'app del telefono): si prova sopra il prompt.
-      await update($, banda, () => true)
-
-      return {
-        text: 'Su questo dispositivo il pannello di Mostrini non si può mostrare. Provo ad aprirlo sopra la casella del prompt: se non lo vedi nemmeno lì, qui Mostrini non si può giocare.',
-      }
+      return { text: 'Su questo dispositivo il pannello di Mostrini non si può mostrare: aprilo dal terminale o dall\'app desktop di Claude.' }
     }
-    await update($, banda, () => false)
 
     return { text: 'Mostrini aperto. Clicca sul pannello per giocare.' }
   })
@@ -118,7 +114,7 @@ export const register: Register = on => {
   // appena mandi un prompt, senza togliere il cursore dalla casella.
   on('prompt.submit', async ($, e, next) => {
     const risposta = await next(e)
-    if (!e.command && (await $.store.get(AUTO_KEY)) !== false) {
+    if (!e.command && e.origin.kind !== 'bridge' && (await $.store.get(AUTO_KEY)) !== false) {
       void $.ui.open({ id: PANE, title: TITLE })
     }
 
@@ -137,15 +133,6 @@ export const register: Register = on => {
     }
 
     return next(e)
-  })
-
-  on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
-    if (!(await read($, banda))) return next(e)
-    const { Box, Text, Svg, Button } = $.ui.resolve(e) as any
-    if (!Svg || !Button) return next(e)
-    const save = (await $.store.get(SAVE_KEY)) ?? null
-
-    return telefono($, { Box, Text, Svg, Button }, save as Stato | null, () => void update($, banda, () => false))
   })
 
   on('ui.render', { component: 'Pane', requestId: PANE }, async ($, e) => {
