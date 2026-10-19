@@ -272,6 +272,10 @@ function sfera(x: number, y: number, p: number) {
   return pixel(SFERA, { k: NERO, r: '#e8483c', w: '#ffffff' }, x, y, p)
 }
 
+function sferaVuota(x: number, y: number, p: number) {
+  return pixel(SFERA, { k: '#6a6470', r: '#a8a2ad', w: '#d8d4db' }, x, y, p)
+}
+
 export function svgMappa(s: Stato): string {
   const mappa = MONDI[s.mondo]!.mappa
   let corpo = ''
@@ -283,7 +287,8 @@ export function svgMappa(s: Stato): string {
 
 // ---------- Lotta ----------
 
-function riquadro(m: Mostrino, x: number, y: number, w: number, mostraNumeri: boolean) {
+// preso: la specie è già nel catalogo, e una piccola sfera lo segna accanto al nome.
+function riquadro(m: Mostrino, x: number, y: number, w: number, mostraNumeri: boolean, preso = false) {
   const d = SPECIE[m.sp]!
   const r = m.hp / maxHp(m)
   const colore = r > 0.5 ? '#4fc35a' : r > 0.2 ? '#f2c230' : '#e8483c'
@@ -292,7 +297,8 @@ function riquadro(m: Mostrino, x: number, y: number, w: number, mostraNumeri: bo
 
   return (
     `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="4" fill="#fffbe8" stroke="${NERO}" stroke-width="2" shape-rendering="auto"/>` +
-    `<text x="${x + 7}" y="${y + 13}" font-size="10" fill="${NERO}" ${FONT}>${esc(d.nome)}</text>` +
+    (preso ? sfera(x + 6, y + 5, 1.1) : '') +
+    `<text x="${x + (preso ? 18 : 7)}" y="${y + 13}" font-size="10" fill="${NERO}" ${FONT}>${esc(d.nome)}</text>` +
     `<text x="${x + w - 7}" y="${y + 13}" font-size="9" fill="${NERO}" text-anchor="end" ${FONT}>Lv${m.lvl}</text>` +
     `<text x="${x + 7}" y="${y + 25}" font-size="7" fill="#c06a1a" ${FONT}>PS</text>` +
     `<rect x="${x + 22}" y="${y + 19}" width="${bw}" height="6" fill="#4a4250"/>` +
@@ -317,9 +323,10 @@ export function svgLotta(s: Stato): string {
     mostro(nem.sp, 205, 22, 5) +
     mostro(io.sp, 49, 94, 6, true) +
     (s.lancio ? sfera(270, 84, 2) : '') +
-    riquadro(nem, 10, 12, 140, false) +
+    riquadro(nem, 10, 12, 140, false, s.catalogo.includes(nem.sp)) +
     riquadro(io, 168, 140, 142, true) +
-    Array.from({ length: s.sfere }, (_, i) => sfera(170 + i * 13, 186, 1.5)).join('') +
+    // Una sfera per ogni Mostrino della squadra (al massimo 3), grigia se è esausto.
+    s.squadra.map((m, i) => (m.hp > 0 ? sfera(170 + i * 13, 186, 1.5) : sferaVuota(170 + i * 13, 186, 1.5))).join('') +
     [...Array(s.cure).fill(false), ...Array(s.cureForti).fill(true)]
       .map((forte, i) => cura(300 - i * 11, 187, 1.5, forte))
       .join('')
