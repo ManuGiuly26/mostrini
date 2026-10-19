@@ -260,14 +260,6 @@ function casella(t: string, x: number, y: number, mondo: number): string {
 // La sfera: metà rossa, metà bianca, bottone al centro.
 const SFERA = ['..kkkk..', '.krrrrk.', 'krrrrrrk', 'kkkwwkkk', 'kwwkkwwk', 'kwwwwwwk', '.kwwwwk.', '..kkkk..']
 
-// La cura: una boccetta con il liquido rosa.
-const CURA = ['..kkkk..', '...kk...', '..kwwk..', '.kwppwk.', '.kppppk.', '.kppppk.', '..kkkk..']
-
-// La super cura ha il liquido viola.
-function cura(x: number, y: number, p: number, forte = false) {
-  return pixel(CURA, { k: NERO, w: '#e8f6ff', p: forte ? '#9b5cff' : '#ff6fa8' }, x, y, p)
-}
-
 function sfera(x: number, y: number, p: number) {
   return pixel(SFERA, { k: NERO, r: '#e8483c', w: '#ffffff' }, x, y, p)
 }
@@ -326,10 +318,7 @@ export function svgLotta(s: Stato): string {
     riquadro(nem, 10, 12, 140, false, s.catalogo.includes(nem.sp)) +
     riquadro(io, 168, 140, 142, true) +
     // Una sfera per ogni Mostrino della squadra (al massimo 3), grigia se è esausto.
-    s.squadra.map((m, i) => (m.hp > 0 ? sfera(170 + i * 13, 186, 1.5) : sferaVuota(170 + i * 13, 186, 1.5))).join('') +
-    [...Array(s.cure).fill(false), ...Array(s.cureForti).fill(true)]
-      .map((forte, i) => cura(300 - i * 11, 187, 1.5, forte))
-      .join('')
+    s.squadra.map((m, i) => (m.hp > 0 ? sfera(170 + i * 13, 186, 1.5) : sferaVuota(170 + i * 13, 186, 1.5))).join('')
 
   return svg(320, 200, corpo)
 }
