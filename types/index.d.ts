@@ -25,6 +25,8 @@ export type Stato = {
   lancio?: boolean
   // lo scambio col box aperto con B: entra è il Mostrino del box già scelto (indice), pagina la decina mostrata
   scambio?: { entra: number | null; pagina: number } | null
+  // in lotta: si sta scegliendo con quale Mostrino della squadra dare il cambio
+  cambio?: boolean
 }
 
 declare module 'claude-code' {
