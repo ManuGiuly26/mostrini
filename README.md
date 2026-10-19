@@ -13,12 +13,12 @@ Mostrini è un mini gioco di creature da catturare che si apre in un pannello de
   - **Vette Gelate:** 9 Mostrini nuovi, compreso il raro Tuonello, con due tipi in più (ghiaccio e roccia) e avversari più forti. Si sbloccano completando il catalogo della Prateria: si apre un portale viola (`P`) che collega i due mondi.
 - **Catalogo per mondo:** nella Prateria conta i suoi 9 Mostrini, nelle Vette Gelate tutti i 18. Un Mostrino entra nel catalogo appena lo catturi o lo sconfiggi.
 - **In lotta**, sotto il tuo riquadro, una sfera per ogni Mostrino della tua squadra (grigia se è esausto). Una piccola sfera accanto al nome dell'avversario ti dice che quella specie è già nel tuo catalogo. Con `5` dai il cambio a un altro Mostrino della squadra: ti costa il turno.
-- **Sfere per catturare:** il numero che ti resta è scritto nel menu della lotta (`3 Sfera`). Una squadra può avere fino a **3 Mostrini**: quelli che catturi in più finiscono nel **box**. Con `B` apri il box: premi il numero del Mostrino che vuoi far entrare e poi il numero di quello della squadra che deve uscire (`B` o `0` annulla).
+- **Sfere per catturare:** il numero che ti resta è scritto nel menu della lotta (`3 Sfera`), e lì sotto trovi anche quante cure e super cure hai. Una squadra può avere fino a **3 Mostrini**: quelli che catturi in più finiscono nel **box**. Con `B` apri il box: premi il numero del Mostrino che vuoi far entrare e poi il numero di quello della squadra che deve uscire (`B` o `0` annulla).
 - **Lotte a turni veloci** con vantaggi di tipo: fuoco batte erba e ghiaccio, erba batte acqua e roccia, acqua batte fuoco e roccia, roccia batte fuoco, ghiaccio ed elettro, ghiaccio batte erba
 - **Livelli ed esperienza per tutta la squadra:** chi lotta prende tutta l'esperienza, gli altri Mostrini in forma la metà
 - **Monete:** ogni lotta vinta ti dà monete (il doppio del livello del Mostrino sconfitto)
 - **Cure nell'inventario:** parti con 2 cure (massimo 5). Puoi comprarne altre al Centro cure per 15 monete l'una (tasto `M` quando ci sei sopra), oppure trovarle: a volte un Mostrino sconfitto ne lascia una. Premi `C` per ridare 20 PS al Mostrino in testa: funziona solo se hai almeno una cura, e in lotta ti costa il turno.
-- **Super cure nelle Vette Gelate:** quando arrivi nel secondo mondo, il Centro cure vende anche la super cura, con il liquido viola. Ridà 50 PS e costa 40 monete (tasto `N` sul Centro cure). Si usa con `X` e se ne tengono al massimo 5.
+- **Super cure nelle Vette Gelate:** quando arrivi nel secondo mondo, il Centro cure vende anche la super cura. Ridà 50 PS e costa 40 monete (tasto `N` sul Centro cure). Si usa con `X` e se ne tengono al massimo 5.
 - **Centro cure** (la casetta con la croce) in ogni mondo per curare tutta la squadra e ricaricare le sfere
 - **Salvataggio automatico** tra una sessione e l'altra
 
