@@ -102,10 +102,7 @@ export const register: Register = on => {
     if (e.origin.kind === 'bridge') {
       return { text: 'Mostrini non si può giocare dal telefono: aprilo dal computer, nel terminale o nell\'app desktop di Claude.' }
     }
-    const aperto = await $.ui.open({ id: PANE, title: TITLE, focus: true })
-    if (!aperto.isPlaced) {
-      return { text: 'Su questo dispositivo il pannello di Mostrini non si può mostrare: aprilo dal terminale o dall\'app desktop di Claude.' }
-    }
+    await $.ui.open({ id: PANE, title: TITLE, focus: true })
 
     return { text: 'Mostrini aperto. Clicca sul pannello per giocare.' }
   })
