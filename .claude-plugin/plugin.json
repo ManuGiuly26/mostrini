@@ -1,6 +1,6 @@
 {
   "name": "mostrini",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "description": "Mini gioco di creature da catturare, da giocare in un pannello mentre Claude lavora",
   "types": "./types/index.d.ts",
   "author": {
