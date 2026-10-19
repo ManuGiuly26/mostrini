@@ -1,6 +1,6 @@
 import { test, expect } from 'claude-code/testing'
 import {
-  statoIniziale, scegliIniziale, muovi, azione, efficacia, apriScambio, normalizza, portaleAperto, specieDel, catalogoDel, usaCura, tasto, compraCura, CURA_PREZZO, SUPER_PREZZO, CENTRO,
+  statoIniziale, scegliIniziale, muovi, azione, efficacia, apriScambio, normalizza, portaleAperto, specieDel, catalogoDel, usaCura, tasto, compraCura, cambiaInLotta, CURA_PREZZO, SUPER_PREZZO, CENTRO,
   MAPPA, MONDI, SPECIE,
 } from '../hooks/gioco.tsx'
 
@@ -138,6 +138,20 @@ test('X usa la super cura anche in lotta', () => {
   let s = scegliIniziale(statoIniziale(), 0)
   s = { ...s, cureForti: 1, modo: 'lotta', nemico: { sp: 'piumino', lvl: 2, xp: 0, hp: 20 }, squadra: [{ ...s.squadra[0]!, hp: 5 }] }
   expect(tasto(s, { key: 'x' }).cureForti).toBe(0)
+})
+
+test('in lotta il 5 apre il cambio e il numero sceglie chi entra', () => {
+  let s = scegliIniziale(statoIniziale(), 0)
+  s = { ...s, squadra: [...s.squadra, { sp: 'ondina', lvl: 4, xp: 0, hp: 20 }], modo: 'lotta', nemico: { sp: 'piumino', lvl: 2, xp: 0, hp: 20 } }
+  s = tasto(s, { key: '5' })
+  expect(s.cambio).toBe(true)
+  s = tasto(s, { key: '2' })
+  expect(s.cambio).toBe(false)
+  expect(s.squadra[0]!.sp).toBe('ondina')
+  expect(s.squadra[1]!.sp).toBe('braciotto')
+  // un Mostrino esausto non entra
+  const esausto = { ...s, squadra: [s.squadra[0]!, { ...s.squadra[1]!, hp: 0 }] }
+  expect(cambiaInLotta(esausto, 1).squadra[0]!.sp).toBe('ondina')
 })
 
 for (const surface of ['terminal', 'desktop'] as const) {
