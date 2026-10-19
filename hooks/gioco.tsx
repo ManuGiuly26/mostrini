@@ -181,6 +181,7 @@ export function normalizza(salvato: Partial<Stato>): Stato {
     nemico: null,
     lancio: false,
     scambio: null,
+    cambio: false,
     squadra,
     box: [...box, ...s.squadra.slice(SQUADRA_MAX)],
     mondo: MONDI[s.mondo ?? 0] ? (s.mondo ?? 0) : 0,
@@ -230,7 +231,7 @@ function incontro(s: Stato, rnd: () => number): Stato {
   const nemico = nuovo(sp, lvl)
 
   return conLog(
-    { ...s, modo: 'lotta', nemico, scelta: 0, lancio: false },
+    { ...s, modo: 'lotta', nemico, scelta: 0, lancio: false, cambio: false },
     `Un ${SPECIE[sp].nome} selvatico (Lv ${lvl}) ti sbarra la strada!`,
   )
 }
@@ -328,8 +329,25 @@ function vittoria(s: Stato, rnd: () => number): Stato {
   return conLog(r.s, ...righe, ...r.righe)
 }
 
+// 5 in lotta: scegli con il numero chi della squadra prende il posto di chi combatte. Costa il turno.
+export function cambiaInLotta(s: Stato, i: number, rnd: () => number = Math.random): Stato {
+  if (s.modo !== 'lotta' || !s.nemico) return s
+  const nuovo = s.squadra[i]
+  if (i === 0 || !nuovo) return conLog(s, `${nome(s.squadra[0]!)} sta già combattendo.`)
+  if (nuovo.hp === 0) return conLog(s, `${nome(nuovo)} è esausto e non può combattere.`)
+  const vecchio = s.squadra[0]!
+  const squadra = [nuovo, ...s.squadra.filter((_, j) => j !== i)]
+
+  return turnoNemico(conLog({ ...s, cambio: false, lancio: false, squadra }, `Torna, ${nome(vecchio)}! Vai, ${nome(nuovo)}!`), rnd)
+}
+
 export function azione(s0: Stato, i: number, rnd: () => number = Math.random): Stato {
   if (s0.modo !== 'lotta' || !s0.nemico) return s0
+  if (i === 4) {
+    if (s0.squadra.filter(m => m.hp > 0).length < 2) return conLog(s0, 'Non hai altri Mostrini in forma per dare il cambio.')
+
+    return { ...s0, cambio: true }
+  }
   const s = { ...s0, lancio: false }
   const io = s.squadra[0]
   const nem = s.nemico!
@@ -488,12 +506,18 @@ export function tasto(s: Stato, k: ClientKeyEvent): Stato {
 
     return s
   }
-  const n = ['1', '2', '3', '4'].indexOf(key)
+  if (s.cambio) {
+    if (key === '0' || key === '5' || key === 'backspace') return { ...s, cambio: false }
+    const j = Number(key)
+
+    return Number.isInteger(j) && j >= 1 && j <= s.squadra.length ? cambiaInLotta(s, j - 1) : s
+  }
+  const n = ['1', '2', '3', '4', '5'].indexOf(key)
   if (n >= 0) return azione(s, n)
   if (key === 'c') return usaCura(s)
   if (key === 'x') return usaCura(s, Math.random, true)
-  if (key === 'up' || key === 'w') return { ...s, scelta: (s.scelta + 3) % 4 }
-  if (key === 'down' || key === 's') return { ...s, scelta: (s.scelta + 1) % 4 }
+  if (key === 'up' || key === 'w') return { ...s, scelta: (s.scelta + 4) % 5 }
+  if (key === 'down' || key === 's') return { ...s, scelta: (s.scelta + 1) % 5 }
   if (key === 'return' || key === ' ' || key === 'space') return azione(s, s.scelta)
 
   return s
@@ -617,7 +641,8 @@ const Gioco: ClientModule<any, Stato> = (props: Props, surface) => {
     const bi = barra(io)
     const dn = SPECIE[nem.sp]
     const di = SPECIE[io.sp]
-    const voci = ['Botta', MOSSA[di.tipo], `Sfera (${s.sfere})`, 'Scappa']
+    const voci = ['Botta', MOSSA[di.tipo], `Sfera (${s.sfere})`, 'Scappa', 'Cambia Mostrino']
+    const giaPreso = s.catalogo.includes(nem.sp)
 
     return (
       <Box flexDirection="column">
@@ -627,7 +652,7 @@ const Gioco: ClientModule<any, Stato> = (props: Props, surface) => {
         <Box flexDirection="row" justifyContent="space-between" marginTop={1}>
           <Box flexDirection="column">
             <Text mono>
-              <Text mono bold>{dn.nome}</Text> Lv {nem.lvl} <Text mono color={COLORE_TIPO[dn.tipo]}>{dn.tipo}</Text>
+              {giaPreso && <Text mono color="#e8483c">◓ </Text>}<Text mono bold>{dn.nome}</Text> Lv {nem.lvl} <Text mono color={COLORE_TIPO[dn.tipo]}>{dn.tipo}</Text>
             </Text>
             <Text mono>
               <Text mono color={bn.colore}>{bn.pieni}</Text>
@@ -656,7 +681,19 @@ const Gioco: ClientModule<any, Stato> = (props: Props, surface) => {
         </Box>
         </Box>
         )}
+        {s.cambio ? (
+          <Box flexDirection="column" marginTop={1}>
+            <Text mono bold color={COL.io}>Chi entra in lotta? Premi il numero (0 annulla)</Text>
+            {s.squadra.map((m, i) => (
+              <Text mono key={'c' + i} dimColor={i === 0 || m.hp === 0}>
+                <Text mono bold>{i + 1}</Text> <Text mono color={COLORE_TIPO[SPECIE[m.sp].tipo]}>{SPECIE[m.sp].nome}</Text> Lv{m.lvl} {m.hp}/{maxHp(m)}
+                {i === 0 ? ' (in lotta)' : m.hp === 0 ? ' (esausto)' : ''}
+              </Text>
+            ))}
+          </Box>
+        ) : (
         <Box flexDirection="column" marginTop={1}>
+          {grafica && giaPreso && <Text mono dimColor>◓ {dn.nome} è già nel tuo catalogo</Text>}
           {voci.map((v, i) => (
             <Text mono key={'v' + i} inverse={i === s.scelta}>
               {' '}
@@ -666,6 +703,7 @@ const Gioco: ClientModule<any, Stato> = (props: Props, surface) => {
           {s.cure > 0 && <Text mono dimColor>C usa una cura ({s.cure})</Text>}
           {s.cureForti > 0 && <Text mono dimColor>X usa una super cura ({s.cureForti})</Text>}
         </Box>
+        )}
         {registro}
       </Box>
     )
