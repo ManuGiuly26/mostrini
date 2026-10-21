@@ -1,6 +1,6 @@
 import { test, expect } from 'claude-code/testing'
 import {
-  statoIniziale, scegliIniziale, muovi, azione, efficacia, apriScambio, normalizza, portaleAperto, specieDel, catalogoDel, usaCura, tasto, compraCura, cambiaInLotta, CURA_PREZZO, SUPER_PREZZO, CENTRO,
+  statoIniziale, scegliIniziale, muovi, azione, efficacia, apriScambio, normalizza, portaleAperto, specieDel, catalogoDel, usaCura, tasto, compraCura, cambiaInLotta, compra, rilascia, sfida, lancia, tastoMenu, statoMenu, SFERA_PREZZO, MEGA_PREZZO, CURA_PREZZO, SUPER_PREZZO, CENTRO,
   MAPPA, MONDI, SPECIE,
 } from '../hooks/gioco.tsx'
 
@@ -154,9 +154,73 @@ test('in lotta il 5 apre il cambio e il numero sceglie chi entra', () => {
   expect(cambiaInLotta(esausto, 1).squadra[0]!.sp).toBe('ondina')
 })
 
+test('dal box si può rilasciare un Mostrino', () => {
+  let s = scegliIniziale(statoIniziale(), 0)
+  s = { ...s, box: [{ sp: 'ondina', lvl: 4, xp: 0, hp: 20 }, { sp: 'piumino', lvl: 3, xp: 0, hp: 10 }] }
+  s = apriScambio(s)
+  s = tasto(s, { key: 'r' })
+  expect(s.scambio?.rilascia).toBe(true)
+  s = tasto(s, { key: '1' })
+  expect(s.box.map(m => m.sp)).toEqual(['piumino'])
+  expect(rilascia(s, 0).box.length).toBe(0)
+})
+
+test('le sfere si comprano al negozio: le mega solo nelle Vette Gelate', () => {
+  const s = { ...scegliIniziale(statoIniziale(), 0), x: CENTRO.x, y: CENTRO.y, monete: SFERA_PREZZO + MEGA_PREZZO }
+  const dopo = compra(s, 'sfera')
+  expect(dopo.sfere).toBe(s.sfere + 1)
+  expect(dopo.monete).toBe(MEGA_PREZZO)
+  expect(compra(dopo, 'mega').megaSfere).toBe(0)
+  expect(compra({ ...dopo, mondo: 1 }, 'mega').megaSfere).toBe(1)
+  // Il Centro cure non ricarica più le sfere
+  const vuoto = { ...s, sfere: 0, x: CENTRO.x + 1 }
+  expect(muovi(vuoto, -1, 0).sfere).toBe(0)
+  // Il negozio si apre con M e si compra col numero
+  const negozio = tasto(s, { key: 'm' })
+  expect(negozio.negozio).toBe(true)
+  expect(tasto(negozio, { key: '2' }).sfere).toBe(s.sfere + 1)
+})
+
+test('gli allenatori sfidano con la loro squadra', () => {
+  let s = scegliIniziale(statoIniziale(), 0)
+  s = { ...s, squadra: [{ ...s.squadra[0]!, lvl: 50, hp: 500 }] }
+  s = sfida(s, () => 0.5)
+  expect(s.modo).toBe('lotta')
+  expect(s.allenatore?.squadra.length).toBe(1)
+  // niente cattura e niente fuga contro un allenatore
+  expect(lancia(s, false, () => 0).modo).toBe('lotta')
+  expect(azione(s, 3, () => 0).modo).toBe('lotta')
+  const monete = s.monete
+  s = azione({ ...s, nemico: { ...s.nemico!, hp: 1 } }, 0, () => 0.5)
+  expect(s.modo).toBe('lotta')
+  expect(s.allenatore?.squadra.length).toBe(0)
+  s = azione({ ...s, nemico: { ...s.nemico!, hp: 1 } }, 0, () => 0.5)
+  expect(s.modo).toBe('mappa')
+  expect(s.allenatore).toBeNull()
+  expect(s.monete).toBeGreaterThan(monete)
+})
+
+test('il menu principale apre, inizia e cancella le partite', () => {
+  const salvata = { ...scegliIniziale(statoIniziale(), 1), slot: 0 }
+  const partite = [salvata, null, null]
+  expect(tastoMenu(statoMenu(), '1', partite, 0).s.squadra[0]!.sp).toBe('goccetto')
+  expect(tastoMenu(statoMenu(), 'return', partite, 0).s.slot).toBe(0)
+  const nuova = tastoMenu(statoMenu(), '2', partite, 0).s
+  expect(nuova.modo).toBe('inizio')
+  expect(nuova.slot).toBe(1)
+  // D, poi il numero chiede conferma; lo stesso numero cancella, un altro tasto annulla
+  const cancella = tastoMenu(statoMenu(), 'd', partite, 0).s
+  const conferma = tastoMenu(cancella, '1', partite, 0)
+  expect(conferma.cancella).toBeUndefined()
+  expect(conferma.s.daCancellare).toBe(0)
+  expect(tastoMenu(conferma.s, '1', partite, 0).cancella).toBe(0)
+  expect(tastoMenu(conferma.s, '2', partite, 0).cancella).toBeUndefined()
+  expect(tasto({ ...salvata, modo: 'mappa' }, { key: 'p' }).modo).toBe('menu')
+})
+
 for (const surface of ['terminal', 'desktop'] as const) {
-  test(`il pannello disegna il gioco e salva (${surface})`, async ($, on) => {
-    const salvati: unknown[] = []
+  test(`il pannello parte dal menu, inizia una partita e la salva (${surface})`, async ($, on) => {
+    const salvati: any[] = []
     on('store.get', async () => ({ value: undefined }))
     on('store.set', async (_$, e) => {
       salvati.push((e as any).value)
@@ -169,32 +233,18 @@ for (const surface of ['terminal', 'desktop'] as const) {
       requestId: 'mostrini',
       props: { title: 'Mostrini', isFocused: true, bodyColumns: 60, placement: 'dock' },
     })
+    expect(await ui.find({ in: 'gioco', text: /Partita 1/ })).toBeTruthy()
+    await ui.key({ in: 'gioco', key: '1' })
     expect(await ui.find({ in: 'gioco', text: /Braciotto/ })).toBeTruthy()
     await ui.key({ in: 'gioco', key: '2' })
     expect(await ui.find({ in: 'gioco', text: /Frecce\/WASD/ })).toBeTruthy()
     expect(salvati.length).toBe(1)
+    expect(salvati[0].partite[0].squadra[0].sp).toBe('goccetto')
+    // un passo e poi P: la partita si salva con la nuova posizione e si torna al menu
+    await ui.key({ in: 'gioco', key: 'left' })
+    await ui.key({ in: 'gioco', key: 'p' })
+    expect(await ui.find({ in: 'gioco', text: /menu principale/ })).toBeTruthy()
+    expect(salvati.at(-1).partite[0].x).toBe(salvati[0].partite[0].x - 1)
     await ui.unmount()
   })
 }
-
-test('sul telefono si gioca con i pulsanti, un passo per tocco', async ($, on) => {
-  const salvati: any[] = []
-  on('store.get', async () => ({ value: undefined }))
-  on('store.set', async (_$, e) => {
-    salvati.push((e as any).value)
-    return { value: undefined }
-  })
-  const ui = await ($.ui as any).mount({
-    plugin: 'mostrini',
-    surface: 'mobile',
-    component: 'Pane',
-    requestId: 'mostrini',
-    props: { title: 'Mostrini', isFocused: true, bodyColumns: 40, placement: 'dock' },
-  })
-  await ui.press({ key: 't1' })
-  const scelto = salvati.at(-1)
-  expect(scelto.squadra[0].sp).toBe('braciotto')
-  await ui.press({ key: 'tleft' })
-  expect(salvati.at(-1).x).toBe(scelto.x - 1)
-  await ui.unmount()
-})
