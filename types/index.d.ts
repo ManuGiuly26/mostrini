@@ -1,9 +1,10 @@
-export type Tipo = 'fuoco' | 'acqua' | 'erba' | 'elettro' | 'normale' | 'ghiaccio' | 'roccia'
-export type Mostrino = { sp: string; lvl: number; xp: number; hp: number }
+export type Tipo = 'fuoco' | 'acqua' | 'erba' | 'elettro' | 'normale' | 'ghiaccio' | 'roccia' | 'terra' | 'veleno' | 'spettro'
+// evo: la forma evoluta, che arriva dal livello 15
+export type Mostrino = { sp: string; lvl: number; xp: number; hp: number; evo?: boolean }
 export type Modo = 'menu' | 'inizio' | 'mappa' | 'lotta'
 export type Stato = {
   modo: Modo
-  // 0 la Prateria, 1 le Vette Gelate
+  // 0 la Prateria, 1 le Vette Gelate, 2 il Deserto Rovente, 3 la Palude Nebbiosa, 4 le Rovine Spettrali
   mondo: number
   x: number
   y: number

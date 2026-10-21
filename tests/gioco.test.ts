@@ -1,13 +1,137 @@
 import { test, expect } from 'claude-code/testing'
 import {
   statoIniziale, scegliIniziale, muovi, azione, efficacia, apriScambio, normalizza, portaleAperto, specieDel, catalogoDel, usaCura, tasto, compraCura, cambiaInLotta, compra, rilascia, sfida, lancia, tastoMenu, statoMenu, SFERA_PREZZO, MEGA_PREZZO, CURA_PREZZO, SUPER_PREZZO, CENTRO,
-  MAPPA, MONDI, SPECIE,
+  MAPPA, MONDI, SPECIE, bioma, livelloNel, evolve, nome, maxHp,
 } from '../hooks/gioco.tsx'
+import { DISEGNI } from '../hooks/grafica.ts'
 
 test('la mappa è rettangolare e ogni specie ha una mossa', () => {
   for (const m of MONDI) for (const riga of m.mappa) expect(riga.length).toBe(MAPPA[0]!.length)
-  expect(specieDel(0).length).toBe(9)
-  expect(specieDel(1).length).toBe(9)
+  expect(MONDI.length).toBe(5)
+  MONDI.forEach((m, i) => {
+    expect(specieDel(i).length).toBe(9)
+    expect(specieDel(i)).toContain(m.raro)
+  })
+  // ogni specie ha il suo disegno in pixel art, con il cappello largo 12
+  for (const sp of Object.keys(SPECIE)) expect(DISEGNI[sp]?.cappello.every(r => r.length === 12)).toBe(true)
+})
+
+// Le caselle che si raggiungono a piedi dal Centro cure.
+function raggiungibili(mappa: string[]): Set<string> {
+  const visti = new Set<string>()
+  const coda: [number, number][] = [[CENTRO.x + 1, CENTRO.y]]
+  while (coda.length > 0) {
+    const [x, y] = coda.pop()!
+    const t = mappa[y]?.[x]
+    if (visti.has(x + ',' + y) || t === undefined || t === '#' || t === '~') continue
+    visti.add(x + ',' + y)
+    coda.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1])
+  }
+
+  return visti
+}
+
+test('ogni mondo ha il Centro cure e i portali raggiungibili a piedi', () => {
+  MONDI.forEach((m, i) => {
+    expect(m.mappa[CENTRO.y]![CENTRO.x]).toBe('C')
+    const vie = raggiungibili(m.mappa)
+    const dove = (c: string) => m.mappa.flatMap((r, y) => [...r].map((t, x) => (t === c ? x + ',' + y : ''))).filter(Boolean)
+    // P verso il mondo dopo (non nell'ultimo), R verso il mondo prima (non nella Prateria)
+    expect(dove('P').length).toBe(i < MONDI.length - 1 ? 1 : 0)
+    expect(dove('R').length).toBe(i > 0 ? 1 : 0)
+    for (const k of [...dove('P'), ...dove('R')]) expect(vie.has(k)).toBe(true)
+  })
+})
+
+test('i portali portano avanti e indietro tra i cinque mondi', () => {
+  let s = scegliIniziale(statoIniziale(), 0)
+  s = { ...s, mondo: 1, catalogo: [...specieDel(0), ...specieDel(1)] }
+  expect(portaleAperto(s)).toBe(true)
+  // il P delle Vette Gelate è in (18,1)
+  const deserto = muovi({ ...s, x: 17, y: 1 }, 1, 0, () => 0.99)
+  expect(deserto.mondo).toBe(2)
+  expect(catalogoDel(deserto)).toEqual({ presi: 18, tot: 27 })
+  // l'R del Deserto in (1,1) riporta alle Vette
+  expect(muovi({ ...deserto, x: 2, y: 1 }, -1, 0, () => 0.99).mondo).toBe(1)
+  // senza il catalogo del Deserto il suo portale resta chiuso
+  expect(muovi({ ...deserto, x: 17, y: 8 }, 1, 0, () => 0.99).x).toBe(17)
+  // le Rovine Spettrali sono l'ultimo mondo: niente portale avanti
+  expect(portaleAperto({ ...s, mondo: 4, catalogo: Object.keys(SPECIE) })).toBe(false)
+  // completare il catalogo delle Vette annuncia il portale verso il Deserto
+  const ultimo = specieDel(1).at(-1)!
+  const quasi = { ...s, catalogo: s.catalogo.filter(sp => sp !== ultimo), modo: 'lotta' as const, nemico: { sp: ultimo, lvl: 8, xp: 0, hp: 1 } }
+  expect(azione(quasi, 0, () => 0.5).log.join(' ')).toContain('verso Deserto Rovente')
+})
+
+test('i livelli dei Mostrini seguono il mondo', () => {
+  MONDI.forEach((m, i) => {
+    expect(livelloNel(i, () => 0)).toBe(m.lvlMin)
+    expect(livelloNel(i, () => 0.999)).toBe(m.lvlMax)
+    // gli allenatori stanno nella metà alta della fascia
+    expect(livelloNel(i, () => 0, true)).toBeGreaterThan(m.lvlMin)
+    if (i > 0) expect(m.lvlMin).toBe(MONDI[i - 1]!.lvlMax + 1)
+  })
+  // una squadra forte non alza i livelli della Prateria
+  let s = scegliIniziale(statoIniziale(), 0)
+  s = { ...s, squadra: [{ ...s.squadra[0]!, lvl: 40, hp: 200 }] }
+  s = muovi(muovi(s, 1, 0, () => 0.5), 1, 0, () => 0.01)
+  expect(s.modo).toBe('lotta')
+  expect(s.nemico!.lvl).toBeLessThanOrEqual(MONDI[0]!.lvlMax)
+})
+
+test('il bioma potenzia o indebolisce le mosse del 5%', () => {
+  expect(bioma(2, 'fuoco')).toBe(1.05)
+  expect(bioma(2, 'acqua')).toBe(0.95)
+  expect(bioma(0, 'fuoco')).toBe(1)
+  const base = {
+    ...scegliIniziale(statoIniziale(), 0),
+    squadra: [{ sp: 'braciotto', lvl: 50, xp: 0, hp: 500 }],
+    modo: 'lotta' as const,
+    nemico: { sp: 'zampetto', lvl: 50, xp: 0, hp: 5000 },
+  }
+  const colpo = (mondo: number) => 5000 - azione({ ...base, mondo }, 1, () => 0.5).nemico!.hp
+  // Fiammata: più forte nel Deserto Rovente, più debole sulle Vette Gelate
+  expect(colpo(2)).toBeGreaterThan(colpo(0))
+  expect(colpo(1)).toBeLessThan(colpo(0))
+})
+
+test('nel negozio un passo chiude il negozio e ti muove', () => {
+  const s = { ...scegliIniziale(statoIniziale(), 0), x: CENTRO.x, y: CENTRO.y, monete: SFERA_PREZZO }
+  const negozio = tasto(s, { key: 'm' })
+  expect(negozio.negozio).toBe(true)
+  const fuori = tasto(negozio, { key: 'right' })
+  expect(fuori.negozio).toBe(false)
+  expect(fuori.x).toBe(CENTRO.x + 1)
+  // i numeri comprano e il negozio resta aperto
+  const comprato = tasto(negozio, { key: '2' })
+  expect(comprato.negozio).toBe(true)
+  expect(comprato.sfere).toBe(s.sfere + 1)
+})
+
+test('dal livello 15 un Mostrino si evolve', () => {
+  let s = scegliIniziale(statoIniziale(), 0)
+  s = { ...s, squadra: [{ sp: 'braciotto', lvl: 14, xp: 14 * 8 - 1, hp: 40 }], modo: 'lotta', nemico: { sp: 'piumino', lvl: 2, xp: 0, hp: 1 } }
+  const prima = maxHp(s.squadra[0]!)
+  s = azione(s, 0, () => 0.5)
+  const io = s.squadra[0]!
+  expect(io.lvl).toBe(15)
+  expect(io.evo).toBe(true)
+  expect(nome(io)).toBe('Bracione')
+  expect(maxHp(io)).toBeGreaterThan(prima)
+  expect(s.log.at(-1)).toContain('si evolve in Bracione')
+  // sotto il 15 niente evoluzione, e chi è già evoluto resta com'è
+  expect(evolve({ sp: 'goccetto', lvl: 14, xp: 0, hp: 10 }, []).evo).toBeUndefined()
+  expect(evolve(io, [])).toBe(io)
+  // ogni specie ha un nome evoluto diverso dal suo
+  for (const sp of Object.keys(SPECIE)) expect(SPECIE[sp]!.evo).not.toBe(SPECIE[sp]!.nome)
+})
+
+test('nei mondi alti gli allenatori hanno Mostrini evoluti', () => {
+  const s = { ...scegliIniziale(statoIniziale(), 0), mondo: 2 }
+  const sfidaDeserto = sfida(s, () => 0.5)
+  expect(sfidaDeserto.nemico!.evo).toBe(true)
+  expect(sfidaDeserto.nemico!.lvl).toBeGreaterThanOrEqual(MONDI[2]!.lvlMin)
+  expect(sfida({ ...s, mondo: 0 }, () => 0.5).nemico!.evo).toBeUndefined()
 })
 
 test('i tipi si battono a vicenda in cerchio', () => {

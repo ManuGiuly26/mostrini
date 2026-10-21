@@ -5,28 +5,56 @@ export type { Tipo, Mostrino, Modo, Stato } from '../types'
 
 // ---------- Dati di gioco ----------
 
-// mondo: 0 la Prateria, 1 le Vette Gelate (si apre col catalogo della Prateria completo).
-export type Specie = { nome: string; tipo: Tipo; hp: number; atk: number; mondo: number; arte: [string, string] }
+// mondo: 0 la Prateria, 1 le Vette Gelate, 2 il Deserto Rovente, 3 la Palude Nebbiosa, 4 le Rovine Spettrali.
+// Ogni mondo si apre col catalogo del mondo prima completo. evo: il nome della forma evoluta.
+export type Specie = { nome: string; evo: string; tipo: Tipo; hp: number; atk: number; mondo: number; arte: [string, string] }
 
 export const SPECIE: Record<string, Specie> = {
-  braciotto: { nome: 'Braciotto', tipo: 'fuoco', hp: 19, atk: 7, mondo: 0, arte: [' ,^^, ', '(o.o)~'] },
-  fumarello: { nome: 'Fumarello', tipo: 'fuoco', hp: 22, atk: 6, mondo: 0, arte: ['  )) ', '(-_-)'] },
-  goccetto: { nome: 'Goccetto', tipo: 'acqua', hp: 21, atk: 6, mondo: 0, arte: ['  ^  ', '(o_o)'] },
-  ondina: { nome: 'Ondina', tipo: 'acqua', hp: 18, atk: 7, mondo: 0, arte: [' ~~~ ', '<°_°>'] },
-  germoglio: { nome: 'Germoglio', tipo: 'erba', hp: 22, atk: 6, mondo: 0, arte: [' \\|/ ', '(^.^)'] },
-  muschietto: { nome: 'Muschietto', tipo: 'erba', hp: 25, atk: 5, mondo: 0, arte: [' .:. ', '{u_u}'] },
-  zampetto: { nome: 'Zampetto', tipo: 'normale', hp: 20, atk: 6, mondo: 0, arte: [' /\\_/\\', '( •ᴗ•)'] },
-  piumino: { nome: 'Piumino', tipo: 'normale', hp: 17, atk: 7, mondo: 0, arte: ['  __ ', '<(v)>'] },
-  scintillo: { nome: 'Scintillo', tipo: 'elettro', hp: 18, atk: 8, mondo: 0, arte: [' /\\/ ', '[*_*]'] },
-  gelino: { nome: 'Gelino', tipo: 'ghiaccio', hp: 20, atk: 7, mondo: 1, arte: [' * * ', '(o~o)'] },
-  nevischio: { nome: 'Nevischio', tipo: 'ghiaccio', hp: 23, atk: 6, mondo: 1, arte: [' .*. ', '(-.-)'] },
-  sassolo: { nome: 'Sassolo', tipo: 'roccia', hp: 26, atk: 6, mondo: 1, arte: ['  __ ', '[o_o]'] },
-  macigno: { nome: 'Macigno', tipo: 'roccia', hp: 30, atk: 5, mondo: 1, arte: [' /--\\', '[=_=]'] },
-  lavotto: { nome: 'Lavotto', tipo: 'fuoco', hp: 21, atk: 8, mondo: 1, arte: [' ^^^ ', '(>_<)'] },
-  brinella: { nome: 'Brinella', tipo: 'acqua', hp: 22, atk: 7, mondo: 1, arte: [' ~*~ ', '(o.o)'] },
-  licheno: { nome: 'Licheno', tipo: 'erba', hp: 24, atk: 6, mondo: 1, arte: [' ,., ', '{o_o}'] },
-  yetino: { nome: 'Yetino', tipo: 'normale', hp: 27, atk: 6, mondo: 1, arte: [' MMM ', '(o_O)'] },
-  tuonello: { nome: 'Tuonello', tipo: 'elettro', hp: 22, atk: 9, mondo: 1, arte: [' >>> ', '[@_@]'] },
+  braciotto: { nome: 'Braciotto', evo: 'Bracione', tipo: 'fuoco', hp: 19, atk: 7, mondo: 0, arte: [' ,^^, ', '(o.o)~'] },
+  fumarello: { nome: 'Fumarello', evo: 'Fumarone', tipo: 'fuoco', hp: 22, atk: 6, mondo: 0, arte: ['  )) ', '(-_-)'] },
+  goccetto: { nome: 'Goccetto', evo: 'Goccione', tipo: 'acqua', hp: 21, atk: 6, mondo: 0, arte: ['  ^  ', '(o_o)'] },
+  ondina: { nome: 'Ondina', evo: 'Maroso', tipo: 'acqua', hp: 18, atk: 7, mondo: 0, arte: [' ~~~ ', '<°_°>'] },
+  germoglio: { nome: 'Germoglio', evo: 'Fogliardo', tipo: 'erba', hp: 22, atk: 6, mondo: 0, arte: [' \\|/ ', '(^.^)'] },
+  muschietto: { nome: 'Muschietto', evo: 'Muschione', tipo: 'erba', hp: 25, atk: 5, mondo: 0, arte: [' .:. ', '{u_u}'] },
+  zampetto: { nome: 'Zampetto', evo: 'Zampardo', tipo: 'normale', hp: 20, atk: 6, mondo: 0, arte: [' /\\_/\\', '( •ᴗ•)'] },
+  piumino: { nome: 'Piumino', evo: 'Piumastro', tipo: 'normale', hp: 17, atk: 7, mondo: 0, arte: ['  __ ', '<(v)>'] },
+  scintillo: { nome: 'Scintillo', evo: 'Saettone', tipo: 'elettro', hp: 18, atk: 8, mondo: 0, arte: [' /\\/ ', '[*_*]'] },
+  gelino: { nome: 'Gelino', evo: 'Gelone', tipo: 'ghiaccio', hp: 20, atk: 7, mondo: 1, arte: [' * * ', '(o~o)'] },
+  nevischio: { nome: 'Nevischio', evo: 'Bufera', tipo: 'ghiaccio', hp: 23, atk: 6, mondo: 1, arte: [' .*. ', '(-.-)'] },
+  sassolo: { nome: 'Sassolo', evo: 'Sassone', tipo: 'roccia', hp: 26, atk: 6, mondo: 1, arte: ['  __ ', '[o_o]'] },
+  macigno: { nome: 'Macigno', evo: 'Montagnone', tipo: 'roccia', hp: 30, atk: 5, mondo: 1, arte: [' /--\\', '[=_=]'] },
+  lavotto: { nome: 'Lavotto', evo: 'Magmotto', tipo: 'fuoco', hp: 21, atk: 8, mondo: 1, arte: [' ^^^ ', '(>_<)'] },
+  brinella: { nome: 'Brinella', evo: 'Galaverna', tipo: 'acqua', hp: 22, atk: 7, mondo: 1, arte: [' ~*~ ', '(o.o)'] },
+  licheno: { nome: 'Licheno', evo: 'Tundrone', tipo: 'erba', hp: 24, atk: 6, mondo: 1, arte: [' ,., ', '{o_o}'] },
+  yetino: { nome: 'Yetino', evo: 'Yetone', tipo: 'normale', hp: 27, atk: 6, mondo: 1, arte: [' MMM ', '(o_O)'] },
+  tuonello: { nome: 'Tuonello', evo: 'Tuonardo', tipo: 'elettro', hp: 22, atk: 9, mondo: 1, arte: [' >>> ', '[@_@]'] },
+  sabbiotto: { nome: 'Sabbiotto', evo: 'Sabbione', tipo: 'terra', hp: 24, atk: 8, mondo: 2, arte: ['  ∴  ', '(°.°)'] },
+  dunetto: { nome: 'Dunetto', evo: 'Dunastro', tipo: 'terra', hp: 27, atk: 7, mondo: 2, arte: [' ~-~ ', '(-.-)'] },
+  cactello: { nome: 'Cactello', evo: 'Cactone', tipo: 'erba', hp: 25, atk: 8, mondo: 2, arte: [' _|_ ', '|(^_^)|'] },
+  pungiglio: { nome: 'Pungiglio', evo: 'Scorpione', tipo: 'veleno', hp: 22, atk: 9, mondo: 2, arte: ['  __/', '(>.<)'] },
+  solletto: { nome: 'Solletto', evo: 'Solleone', tipo: 'fuoco', hp: 23, atk: 9, mondo: 2, arte: [' \\ | / ', '-(^o^)-'] },
+  cammellino: { nome: 'Cammellino', evo: 'Dromedone', tipo: 'normale', hp: 30, atk: 7, mondo: 2, arte: [' n n ', '(u.u)'] },
+  oasina: { nome: 'Oasina', evo: 'Oasirena', tipo: 'acqua', hp: 24, atk: 8, mondo: 2, arte: [' \\Y/ ', '(o~o)'] },
+  pietrolo: { nome: 'Pietrolo', evo: 'Pietrone', tipo: 'roccia', hp: 29, atk: 7, mondo: 2, arte: ['  /\\ ', '[o.o]'] },
+  mummietto: { nome: 'Mummietto', evo: 'Faraone', tipo: 'spettro', hp: 24, atk: 10, mondo: 2, arte: [' #=# ', '(*_*)'] },
+  melmino: { nome: 'Melmino', evo: 'Melmone', tipo: 'veleno', hp: 28, atk: 8, mondo: 3, arte: ['  o  ', '(~_~)'] },
+  fanghetto: { nome: 'Fanghetto', evo: 'Fangone', tipo: 'terra', hp: 30, atk: 8, mondo: 3, arte: [' ~.~ ', '(ò_ó)'] },
+  rospetto: { nome: 'Rospetto', evo: 'Rospone', tipo: 'acqua', hp: 27, atk: 9, mondo: 3, arte: [' @ @ ', '(___)'] },
+  tossilla: { nome: 'Tossilla', evo: 'Tossicona', tipo: 'veleno', hp: 25, atk: 10, mondo: 3, arte: [' .-o-. ', ' (^_^) '] },
+  ninfeo: { nome: 'Ninfeo', evo: 'Lotone', tipo: 'erba', hp: 29, atk: 8, mondo: 3, arte: ['  *  ', '~(^‿^)~'] },
+  zanzarello: { nome: 'Zanzarello', evo: 'Zanzarone', tipo: 'normale', hp: 24, atk: 10, mondo: 3, arte: [' \\ / ', '-(o>o)-'] },
+  lucciolo: { nome: 'Lucciolo', evo: 'Luccicone', tipo: 'elettro', hp: 25, atk: 10, mondo: 3, arte: [' * * ', '(°o°)'] },
+  nebbietta: { nome: 'Nebbietta', evo: 'Foschiona', tipo: 'spettro', hp: 26, atk: 9, mondo: 3, arte: [' ~ ~ ', '(-o-)'] },
+  draghetto: { nome: 'Draghetto', evo: 'Paludrago', tipo: 'veleno', hp: 30, atk: 11, mondo: 3, arte: [' /\\/\\ ', '<(ò.ó)>'] },
+  fantasmino: { nome: 'Fantasmino', evo: 'Fantasmone', tipo: 'spettro', hp: 28, atk: 10, mondo: 4, arte: [' .-. ', '(o o)'] },
+  lumicino: { nome: 'Lumicino', evo: 'Fuocofatuo', tipo: 'fuoco', hp: 27, atk: 11, mondo: 4, arte: ['  )  ', '(°w°)'] },
+  ossicino: { nome: 'Ossicino', evo: 'Scheletrone', tipo: 'terra', hp: 31, atk: 9, mondo: 4, arte: [' o=o ', '(x.x)'] },
+  pipistrillo: { nome: 'Pipistrillo', evo: 'Vampirone', tipo: 'veleno', hp: 27, atk: 11, mondo: 4, arte: ['/\\ /\\', '(o^o)'] },
+  gargolino: { nome: 'Gargolino', evo: 'Gargolone', tipo: 'roccia', hp: 34, atk: 9, mondo: 4, arte: [' ^ ^ ', '[ò_ó]'] },
+  ombretta: { nome: 'Ombretta', evo: 'Tenebra', tipo: 'spettro', hp: 26, atk: 12, mondo: 4, arte: [' ▒▒▒ ', '(•_•)'] },
+  corvetto: { nome: 'Corvetto', evo: 'Corvaccio', tipo: 'normale', hp: 28, atk: 11, mondo: 4, arte: ['  ,  ', '(o>o)'] },
+  brividino: { nome: 'Brividino', evo: 'Brividone', tipo: 'ghiaccio', hp: 29, atk: 10, mondo: 4, arte: [' *^* ', '(>.<)'] },
+  eclissino: { nome: 'Eclissino', evo: 'Eclissone', tipo: 'spettro', hp: 32, atk: 12, mondo: 4, arte: [' C . ', '(*.*)'] },
 }
 
 export const INIZIALI = ['braciotto', 'goccetto', 'germoglio']
@@ -39,6 +67,9 @@ const MOSSA: Record<Tipo, string> = {
   normale: 'Rotolone',
   ghiaccio: 'Gelo',
   roccia: 'Frana',
+  terra: 'Polverone',
+  veleno: 'Tossina',
+  spettro: 'Spavento',
 }
 
 const COLORE_TIPO: Record<Tipo, string> = {
@@ -49,24 +80,34 @@ const COLORE_TIPO: Record<Tipo, string> = {
   normale: '#d6c7b0',
   ghiaccio: '#9fe6ff',
   roccia: '#b89a72',
+  terra: '#d9a85c',
+  veleno: '#c46cd9',
+  spettro: '#9c8cf0',
 }
 
 export function efficacia(att: Tipo, dif: Tipo): number {
   const forte: Record<string, Tipo[]> = {
     fuoco: ['erba', 'ghiaccio'],
-    acqua: ['fuoco', 'roccia'],
-    erba: ['acqua', 'roccia'],
+    acqua: ['fuoco', 'roccia', 'terra'],
+    erba: ['acqua', 'roccia', 'terra'],
     elettro: ['acqua'],
-    ghiaccio: ['erba'],
+    ghiaccio: ['erba', 'terra'],
     roccia: ['fuoco', 'ghiaccio', 'elettro'],
+    terra: ['fuoco', 'elettro', 'roccia', 'veleno'],
+    veleno: ['erba'],
+    spettro: ['spettro', 'veleno'],
   }
   const debole: Record<string, Tipo[]> = {
     fuoco: ['acqua', 'fuoco', 'roccia'],
     acqua: ['erba', 'acqua'],
-    erba: ['fuoco', 'erba'],
-    elettro: ['erba', 'elettro', 'roccia'],
+    erba: ['fuoco', 'erba', 'veleno'],
+    elettro: ['erba', 'elettro', 'roccia', 'terra'],
     ghiaccio: ['fuoco', 'ghiaccio', 'roccia'],
     roccia: ['roccia'],
+    normale: ['spettro'],
+    terra: ['erba', 'terra'],
+    veleno: ['veleno', 'terra', 'roccia', 'spettro'],
+    spettro: ['normale', 'roccia'],
   }
   if (forte[att]?.includes(dif)) return 1.5
   if (debole[att]?.includes(dif)) return 0.6
@@ -75,14 +116,31 @@ export function efficacia(att: Tipo, dif: Tipo): number {
 }
 
 // Ogni casella occupa due caratteri a schermo.
-// # albero  , erba alta  ~ acqua  . sentiero  C centro cure  P portale tra i mondi
-export type Mondo = { nome: string; mappa: string[]; raro: string; lvlMin: number }
+// # albero  , erba alta  ~ acqua  . sentiero  C centro cure  P portale verso il mondo dopo  R portale verso il mondo prima
+// lvlMin e lvlMax: la fascia di livelli dei Mostrini di quel mondo.
+// forti e deboli: il bioma potenzia del 5% le mosse dei tipi forti e indebolisce del 5% quelle dei tipi deboli.
+export type Mondo = {
+  nome: string
+  nel: string
+  del: string
+  mappa: string[]
+  raro: string
+  lvlMin: number
+  lvlMax: number
+  forti: Tipo[]
+  deboli: Tipo[]
+}
 
 export const MONDI: Mondo[] = [
   {
     nome: 'Prateria',
+    nel: 'nella Prateria',
+    del: 'della Prateria',
     raro: 'scintillo',
     lvlMin: 2,
+    lvlMax: 7,
+    forti: ['erba', 'normale'],
+    deboli: ['ghiaccio', 'spettro'],
     mappa: [
       '####################',
       '#....,,,,,,....~~~~#',
@@ -98,18 +156,89 @@ export const MONDI: Mondo[] = [
   },
   {
     nome: 'Vette Gelate',
+    nel: 'sulle Vette Gelate',
+    del: 'delle Vette Gelate',
     raro: 'tuonello',
     lvlMin: 8,
+    lvlMax: 14,
+    forti: ['ghiaccio', 'roccia'],
+    deboli: ['fuoco', 'erba'],
     mappa: [
       '####################',
-      '#...,,,,,..##,,,,,,#',
+      '#...,,,,,..##,,,,,P#',
       '#.C.,,,,,..##,,,,,,#',
       '#...,,,,,......,,,,#',
       '#.....~~~~...,,,,,,#',
       '#,,,..~~~~..,,,..,,#',
       '#,,,,......,,,,..,,#',
       '#,,,,,,..##..,,,,,,#',
-      '#P,,,,,..##.....,,,#',
+      '#R,,,,,..##.....,,,#',
+      '####################',
+    ],
+  },
+  {
+    nome: 'Deserto Rovente',
+    nel: 'nel Deserto Rovente',
+    del: 'del Deserto Rovente',
+    raro: 'mummietto',
+    lvlMin: 15,
+    lvlMax: 21,
+    forti: ['fuoco', 'terra'],
+    deboli: ['acqua', 'ghiaccio'],
+    mappa: [
+      '####################',
+      '#R..,,,,,....,,,,,.#',
+      '#.C.,,,,,..#.,,,,,.#',
+      '#...,,,,,....,,,,,.#',
+      '#.......~~.........#',
+      '#,,,,...~~..,,,,,,,#',
+      '#,,,,,......,,,,#,,#',
+      '#,,#,,,,..,,,,,,,,,#',
+      '#,,,,,,,..,,,,,,,,P#',
+      '####################',
+    ],
+  },
+  {
+    nome: 'Palude Nebbiosa',
+    nel: 'nella Palude Nebbiosa',
+    del: 'della Palude Nebbiosa',
+    raro: 'draghetto',
+    lvlMin: 22,
+    lvlMax: 28,
+    forti: ['veleno', 'acqua'],
+    deboli: ['fuoco', 'roccia'],
+    mappa: [
+      '####################',
+      '#...,,,~~~,,,,..,,R#',
+      '#.C.,,,~~~,,,,..,,.#',
+      '#...,,,,,,,,~~.....#',
+      '#~~..,,,,,..~~,,,,,#',
+      '#~~..,,#,,......,,,#',
+      '#,,,,,,#,,,~~~,,,,,#',
+      '#,,,,......~~~,,,,,#',
+      '#P,,,,,,,......,,,,#',
+      '####################',
+    ],
+  },
+  {
+    nome: 'Rovine Spettrali',
+    nel: 'tra le Rovine Spettrali',
+    del: 'delle Rovine Spettrali',
+    raro: 'eclissino',
+    lvlMin: 29,
+    lvlMax: 36,
+    forti: ['spettro', 'roccia'],
+    deboli: ['normale', 'erba'],
+    mappa: [
+      '####################',
+      '#...,,,,#,,,,,,,,,R#',
+      '#.C.,,,,#,,,,#,,,,.#',
+      '#...,,,,...,,#,,,,.#',
+      '#.....##.....#.....#',
+      '#,,,,,##,,,,...,,,,#',
+      '#,,,,,,,,,~~~,,#,,,#',
+      '#,,#,,,,,,~~~,,#,,,#',
+      '#,,#,,,,,,,,,,,,,,,#',
       '####################',
     ],
   },
@@ -128,29 +257,53 @@ export const MEGA_PREZZO = 25
 export const SQUADRA_MAX = 3
 export const PARTITE = 3
 
-export const maxHp = (m: Mostrino) => SPECIE[m.sp].hp + m.lvl * 3
-const atk = (m: Mostrino) => SPECIE[m.sp].atk + m.lvl * 2
-const nome = (m: Mostrino) => SPECIE[m.sp].nome
+// Dal livello 15 un Mostrino si evolve: nome nuovo, PS e attacco più alti del 20%.
+export const LVL_EVO = 15
+const EVO_BONUS = 1.2
+
+export const maxHp = (m: Mostrino) => Math.round((SPECIE[m.sp].hp + m.lvl * 3) * (m.evo ? EVO_BONUS : 1))
+const atk = (m: Mostrino) => Math.round((SPECIE[m.sp].atk + m.lvl * 2) * (m.evo ? EVO_BONUS : 1))
+export const nome = (m: Mostrino) => (m.evo ? SPECIE[m.sp].evo : SPECIE[m.sp].nome)
 
 export const specieDel = (mondo: number) => Object.keys(SPECIE).filter(k => SPECIE[k].mondo === mondo)
 
-// Il catalogo di un mondo conta le specie di quel mondo e dei mondi prima: 9 nella Prateria, 18 nelle Vette.
+// Il catalogo di un mondo conta le specie di quel mondo e dei mondi prima: 9 nella Prateria, 18 nelle Vette e così via.
 export function catalogoDel(s: Stato): { presi: number; tot: number } {
   const specie = Object.keys(SPECIE).filter(k => SPECIE[k].mondo <= s.mondo)
 
   return { presi: specie.filter(k => s.catalogo.includes(k)).length, tot: specie.length }
 }
 
-// Il portale si apre quando il catalogo del mondo precedente è completo.
-export function portaleAperto(s: Stato): boolean {
-  return specieDel(0).every(sp => s.catalogo.includes(sp))
+// Il portale P di un mondo si apre quando il suo catalogo è completo; l'ultimo mondo non ne ha.
+export function portaleAperto(s: Stato, mondo = s.mondo): boolean {
+  return mondo + 1 < MONDI.length && specieDel(mondo).every(sp => s.catalogo.includes(sp))
 }
 
-function nuovo(sp: string, lvl: number): Mostrino {
-  const m = { sp, lvl, xp: 0, hp: 0 }
+// +5% o -5% a seconda del tipo della mossa e del bioma del mondo.
+export function bioma(mondo: number, tipo: Tipo): number {
+  const m = MONDI[mondo]
+  if (m?.forti.includes(tipo)) return 1.05
+  if (m?.deboli.includes(tipo)) return 0.95
+
+  return 1
+}
+
+export const affinita = (mondo: number) =>
+  `${MONDI[mondo]!.forti.join(' e ')} +5%, ${MONDI[mondo]!.deboli.join(' e ')} -5%`
+
+function nuovo(sp: string, lvl: number, evo = false): Mostrino {
+  const m: Mostrino = evo ? { sp, lvl, xp: 0, hp: 0, evo } : { sp, lvl, xp: 0, hp: 0 }
   m.hp = maxHp(m)
 
   return m
+}
+
+// I Mostrini di un mondo hanno i livelli della sua fascia; gli allenatori stanno nella metà alta.
+export function livelloNel(mondo: number, rnd: () => number, allenatore = false): number {
+  const { lvlMin, lvlMax } = MONDI[mondo]!
+  const da = allenatore ? Math.ceil((lvlMin + lvlMax) / 2) : lvlMin
+
+  return da + Math.floor(rnd() * (lvlMax - da + 1))
 }
 
 export function statoIniziale(): Stato {
@@ -211,12 +364,16 @@ function curaTutti(s: Stato): Stato {
   return { ...s, squadra: s.squadra.map(m => ({ ...m, hp: maxHp(m) })) }
 }
 
-// Registra una specie nel catalogo e annuncia il portale quando la Prateria è completa.
+// Registra una specie nel catalogo e annuncia il portale quando il catalogo di un mondo è completo.
 function registra(s: Stato, sp: string): { s: Stato; righe: string[] } {
   if (s.catalogo.includes(sp)) return { s, righe: [] }
   const n = { ...s, catalogo: [...s.catalogo, sp] }
   const righe = [`Nuovo nel catalogo: ${SPECIE[sp].nome}!`]
-  if (!portaleAperto(s) && portaleAperto(n)) righe.push('Catalogo della Prateria completo: si è aperto un portale (P)!')
+  MONDI.forEach((m, i) => {
+    if (!portaleAperto(s, i) && portaleAperto(n, i)) {
+      righe.push(`Catalogo ${m.del} completo: si è aperto un portale (P) verso ${MONDI[i + 1]!.nome}!`)
+    }
+  })
   if (n.catalogo.length === Object.keys(SPECIE).length) righe.push('Hai trovato tutti i Mostrini. Sei un campione!')
 
   return { s: n, righe }
@@ -237,32 +394,36 @@ export function scegliIniziale(s: Stato, i: number): Stato {
   }
 }
 
-const livelloMedio = (s: Stato) => Math.round(s.squadra.reduce((a, m) => a + m.lvl, 0) / Math.max(1, s.squadra.length))
-
 function incontro(s: Stato, rnd: () => number): Stato {
   const mondo = MONDI[s.mondo]!
   const pool = specieDel(s.mondo).filter(k => k !== mondo.raro)
   const sp = rnd() < 0.08 ? mondo.raro : pool[Math.floor(rnd() * pool.length)]
-  const lvl = Math.max(mondo.lvlMin, livelloMedio(s) - 1 + Math.floor(rnd() * 3))
-  const nemico = nuovo(sp, lvl)
+  const lvl = livelloNel(s.mondo, rnd)
+  // Dal livello 15 circa un selvatico su tre è già nella forma evoluta.
+  const nemico = nuovo(sp, lvl, lvl >= LVL_EVO && rnd() < 0.35)
 
   return conLog(
     { ...s, modo: 'lotta', nemico, scelta: 0, lancio: false, cambio: false, allenatore: null },
-    `Un ${SPECIE[sp].nome} selvatico (Lv ${lvl}) ti sbarra la strada!`,
+    `Un ${nome(nemico)} selvatico (Lv ${lvl}) ti sbarra la strada!`,
   )
 }
 
 // Gli allenatori che si incontrano per strada e sfidano con la loro squadra.
-const ALLENATORI = ['Allenatrice Lia', 'Allenatore Teo', 'Esploratrice Gea', 'Ranger Bruno', 'Campionessa Vera', 'Montanaro Ugo']
+const ALLENATORI = [
+  'Allenatrice Lia', 'Allenatore Teo', 'Esploratrice Gea', 'Ranger Bruno', 'Campionessa Vera', 'Montanaro Ugo',
+  'Nomade Sami', 'Erborista Nora', 'Custode Elio',
+]
 
 export function sfida(s: Stato, rnd: () => number = Math.random): Stato {
   const mondo = MONDI[s.mondo]!
   const pool = specieDel(s.mondo).filter(k => k !== mondo.raro)
   const quanti = s.mondo === 0 ? 2 : 3
+  // Gli allenatori fanno evolvere i loro Mostrini appena possono.
   const squadra = Array.from({ length: quanti }, () => {
     const sp = pool[Math.floor(rnd() * pool.length)]!
+    const lvl = livelloNel(s.mondo, rnd, true)
 
-    return nuovo(sp, Math.max(mondo.lvlMin, livelloMedio(s) + Math.floor(rnd() * 2)))
+    return nuovo(sp, lvl, lvl >= LVL_EVO)
   })
   const nomeAll = ALLENATORI[Math.floor(rnd() * ALLENATORI.length)]!
   const [primo, ...resto] = squadra
@@ -288,12 +449,14 @@ export function muovi(s: Stato, dx: number, dy: number, rnd: () => number = Math
   if (t === undefined || t === '#' || t === '~') return s
   const n: Stato = { ...s, x: nx, y: ny }
   if (t === 'C') return conLog(curaTutti(n), 'Centro cure: squadra in forma. Premi M per il negozio.')
-  if (t === 'P') {
-    const mondo = s.mondo === 0 ? 1 : 0
+  if (t === 'P' || t === 'R') {
+    const mondo = s.mondo + (t === 'P' ? 1 : -1)
+    if (!MONDI[mondo]) return s
 
     return conLog(
       { ...n, mondo, x: CENTRO.x + 1, y: CENTRO.y },
-      `Attraversi il portale: benvenuto nella ${MONDI[mondo]!.nome === 'Prateria' ? 'Prateria' : 'terra delle ' + MONDI[mondo]!.nome}!`,
+      `Attraversi il portale: benvenuto ${MONDI[mondo]!.nel}!`,
+      `Il bioma qui: ${affinita(mondo)}.`,
     )
   }
   // Nell'erba alta spuntano Mostrini selvatici, e a volte un allenatore; sul sentiero solo gli allenatori.
@@ -303,9 +466,9 @@ export function muovi(s: Stato, dx: number, dy: number, rnd: () => number = Math
   return n
 }
 
-function danno(a: Mostrino, d: Mostrino, potenza: number, tipo: Tipo, rnd: () => number) {
+function danno(a: Mostrino, d: Mostrino, potenza: number, tipo: Tipo, mondo: number, rnd: () => number) {
   const eff = efficacia(tipo, SPECIE[d.sp].tipo)
-  const val = Math.max(1, Math.round(((atk(a) * potenza) / 10) * eff * (0.85 + rnd() * 0.3)))
+  const val = Math.max(1, Math.round(((atk(a) * potenza) / 10) * eff * bioma(mondo, tipo) * (0.85 + rnd() * 0.3)))
 
   return { val, eff }
 }
@@ -322,7 +485,7 @@ function turnoNemico(s: Stato, rnd: () => number): Stato {
   const io = s.squadra[0]
   const tipoMossa: Tipo = rnd() < 0.5 ? SPECIE[nem.sp].tipo : 'normale'
   const nomeMossa = tipoMossa === 'normale' ? 'Botta' : MOSSA[tipoMossa]
-  const { val, eff } = danno(nem, io, tipoMossa === 'normale' ? 5 : 7, tipoMossa, rnd)
+  const { val, eff } = danno(nem, io, tipoMossa === 'normale' ? 5 : 7, tipoMossa, s.mondo, rnd)
   const hp = Math.max(0, io.hp - val)
   const squadra = [{ ...io, hp }, ...s.squadra.slice(1)]
   let n = conLog({ ...s, squadra }, `${nome(nem)} usa ${nomeMossa}: -${val} PS.${nota(eff)}`)
@@ -338,7 +501,8 @@ function turnoNemico(s: Stato, rnd: () => number): Stato {
   return conLog({ ...n, squadra: ordinata }, `${nome(io)} è esausto. Vai, ${nome(ordinata[0])}!`)
 }
 
-function cresce(m: Mostrino, xp: number, righe: string[]): Mostrino {
+// evoluzioni: dove annunciare le evoluzioni, che vanno in fondo al registro per non perderle.
+function cresce(m: Mostrino, xp: number, righe: string[], evoluzioni: string[]): Mostrino {
   let io = { ...m, xp: m.xp + xp }
   while (io.xp >= io.lvl * 8) {
     io = { ...io, xp: io.xp - io.lvl * 8, lvl: io.lvl + 1 }
@@ -346,7 +510,16 @@ function cresce(m: Mostrino, xp: number, righe: string[]): Mostrino {
     righe.push(`${nome(io)} sale al livello ${io.lvl}!`)
   }
 
-  return io
+  return evolve(io, evoluzioni)
+}
+
+// Un Mostrino che arriva al livello 15 si evolve; i PS in più arrivano già pieni.
+export function evolve(m: Mostrino, righe: string[]): Mostrino {
+  if (m.evo || m.lvl < LVL_EVO) return m
+  const evoluto: Mostrino = { ...m, evo: true }
+  righe.push(`Cosa succede? ${nome(m)} si evolve in ${nome(evoluto)}!`)
+
+  return { ...evoluto, hp: m.hp + maxHp(evoluto) - maxHp(m) }
 }
 
 // Chi combatte prende tutta l'esperienza, il resto della squadra in forma la metà.
@@ -356,8 +529,9 @@ function vittoria(s: Stato, rnd: () => number): Stato {
   const xp = nem.lvl * 4
   const vinte = nem.lvl * 2
   const righe = [`${nome(nem)} è sconfitto! +${xp} esperienza, +${vinte} monete.`]
+  const evoluzioni: string[] = []
   const squadra = s.squadra.map((m, i) =>
-    i === 0 ? cresce(m, xp, righe) : m.hp > 0 ? cresce(m, Math.ceil(xp / 2), righe) : m,
+    i === 0 ? cresce(m, xp, righe, evoluzioni) : m.hp > 0 ? cresce(m, Math.ceil(xp / 2), righe, evoluzioni) : m,
   )
   const monete = s.monete + vinte
   const all = s.allenatore
@@ -365,14 +539,14 @@ function vittoria(s: Stato, rnd: () => number): Stato {
     const [prossimo, ...resto] = all.squadra
     const r = registra({ ...s, nemico: prossimo!, lancio: false, squadra, monete, allenatore: { ...all, squadra: resto } }, nem.sp)
 
-    return conLog(r.s, ...righe, ...r.righe, `${all.nome} manda in campo ${nome(prossimo!)} (Lv ${prossimo!.lvl}).`)
+    return conLog(r.s, ...righe, ...r.righe, ...evoluzioni, `${all.nome} manda in campo ${nome(prossimo!)} (Lv ${prossimo!.lvl}).`)
   }
   if (all) {
     const premio = nem.lvl * 10
     righe.push(`Hai battuto ${all.nome}! Premio: +${premio} monete.`)
     const r = registra({ ...s, modo: 'mappa', nemico: null, lancio: false, squadra, monete: monete + premio, allenatore: null }, nem.sp)
 
-    return conLog(r.s, ...righe, ...r.righe)
+    return conLog(r.s, ...righe, ...r.righe, ...evoluzioni)
   }
   // A volte il Mostrino selvatico sconfitto lascia una cura.
   const trovata = s.cure < CURE_MAX && rnd() < 0.25
@@ -380,7 +554,7 @@ function vittoria(s: Stato, rnd: () => number): Stato {
   const cure = trovata ? s.cure + 1 : s.cure
   const r = registra({ ...s, modo: 'mappa', nemico: null, lancio: false, squadra, cure, monete }, nem.sp)
 
-  return conLog(r.s, ...righe, ...r.righe)
+  return conLog(r.s, ...righe, ...r.righe, ...evoluzioni)
 }
 
 // 5 in lotta: scegli con il numero chi della squadra prende il posto di chi combatte. Costa il turno.
@@ -436,7 +610,7 @@ export function azione(s0: Stato, i: number, rnd: () => number = Math.random): S
   if (i === 0 || i === 1) {
     const tipo: Tipo = i === 0 ? 'normale' : SPECIE[io.sp].tipo
     const nomeMossa = i === 0 ? 'Botta' : MOSSA[tipo]
-    const { val, eff } = danno(io, nem, i === 0 ? 5 : 7, tipo, rnd)
+    const { val, eff } = danno(io, nem, i === 0 ? 5 : 7, tipo, s.mondo, rnd)
     const hp = Math.max(0, nem.hp - val)
     const n = conLog({ ...s, nemico: { ...nem, hp } }, `${nome(io)} usa ${nomeMossa}: -${val} PS.${nota(eff)}`)
 
@@ -636,6 +810,11 @@ export function riassunto(p: Stato | null): string {
   return `${nome(io)} Lv${io.lvl} · ${MONDI[p.mondo]?.nome ?? 'Prateria'} · catalogo ${cat.presi}/${cat.tot} · ${p.monete} monete`
 }
 
+// Frecce o WASD: il passo sulla mappa.
+const PASSI: Record<string, [number, number]> = {
+  up: [0, -1], w: [0, -1], down: [0, 1], s: [0, 1], left: [-1, 0], a: [-1, 0], right: [1, 0], d: [1, 0],
+}
+
 export function tasto(s: Stato, k: ClientKeyEvent): Stato {
   const key = k.key.toLowerCase()
   if (s.modo === 'inizio') {
@@ -645,11 +824,10 @@ export function tasto(s: Stato, k: ClientKeyEvent): Stato {
   }
   if (s.modo === 'mappa') {
     if (s.scambio) return tastoScambio(s, key)
+    const passo = PASSI[key]
+    // Il negozio non blocca il movimento: un passo lo chiude.
+    if (passo) return muovi(s.negozio ? { ...s, negozio: false } : s, passo[0], passo[1])
     if (s.negozio) return tastoNegozio(s, key)
-    if (key === 'up' || key === 'w') return muovi(s, 0, -1)
-    if (key === 'down' || key === 's') return muovi(s, 0, 1)
-    if (key === 'left' || key === 'a') return muovi(s, -1, 0)
-    if (key === 'right' || key === 'd') return muovi(s, 1, 0)
     if (key === 'tab' || key === 'q') return ruotaSquadra(s)
     if (key === 'b') return apriScambio(s)
     if (key === 'c') return usaCura(s)
@@ -688,6 +866,7 @@ const COL = {
   centro: '#ff6b81',
   io: '#ffd84c',
   portale: '#b98cff',
+  ritorno: '#4cd6c8',
 }
 
 function barra(m: Mostrino, larghezza = 10) {
@@ -854,7 +1033,9 @@ const Gioco: ClientModule<any, Stato> = (props: Props, surface) => {
     const bi = barra(io)
     const dn = SPECIE[nem.sp]
     const di = SPECIE[io.sp]
-    const voci = ['Botta', MOSSA[di.tipo], s.allenatore ? 'Sfera (non contro un allenatore)' : `Sfera (${s.sfere})`, s.allenatore ? 'Scappa (non da una sfida)' : 'Scappa', 'Cambia Mostrino']
+    // ▲ o ▼: la mossa è potenziata o indebolita del 5% dal bioma del mondo.
+    const segno = (t: Tipo) => (bioma(s.mondo, t) > 1 ? ' ▲5%' : bioma(s.mondo, t) < 1 ? ' ▼5%' : '')
+    const voci = ['Botta' + segno('normale'), MOSSA[di.tipo] + segno(di.tipo), s.allenatore ? 'Sfera (non contro un allenatore)' : `Sfera (${s.sfere})`, s.allenatore ? 'Scappa (non da una sfida)' : 'Scappa', 'Cambia Mostrino']
     const giaPreso = s.catalogo.includes(nem.sp)
 
     return (
@@ -870,7 +1051,7 @@ const Gioco: ClientModule<any, Stato> = (props: Props, surface) => {
         <Box flexDirection="row" justifyContent="space-between" marginTop={1}>
           <Box flexDirection="column">
             <Text mono>
-              {giaPreso && <Text mono color="#e8483c">◓ </Text>}<Text mono bold>{dn.nome}</Text> Lv {nem.lvl} <Text mono color={COLORE_TIPO[dn.tipo]}>{dn.tipo}</Text>
+              {giaPreso && <Text mono color="#e8483c">◓ </Text>}<Text mono bold>{nome(nem)}</Text> Lv {nem.lvl} <Text mono color={COLORE_TIPO[dn.tipo]}>{dn.tipo}</Text>
             </Text>
             <Text mono>
               <Text mono color={bn.colore}>{bn.pieni}</Text>
@@ -889,7 +1070,7 @@ const Gioco: ClientModule<any, Stato> = (props: Props, surface) => {
           </Box>
           <Box flexDirection="column">
             <Text mono>
-              <Text mono bold>{di.nome}</Text> Lv {io.lvl} <Text mono color={COLORE_TIPO[di.tipo]}>{di.tipo}</Text>
+              <Text mono bold>{nome(io)}</Text> Lv {io.lvl} <Text mono color={COLORE_TIPO[di.tipo]}>{di.tipo}</Text>
             </Text>
             <Text mono>
               <Text mono color={bi.colore}>{bi.pieni}</Text>
@@ -904,7 +1085,7 @@ const Gioco: ClientModule<any, Stato> = (props: Props, surface) => {
             <Text mono bold color={COL.io}>Chi entra in lotta? Premi il numero (0 annulla)</Text>
             {s.squadra.map((m, i) => (
               <Text mono key={'c' + i} dimColor={i === 0 || m.hp === 0}>
-                <Text mono bold>{i + 1}</Text> <Text mono color={COLORE_TIPO[SPECIE[m.sp].tipo]}>{SPECIE[m.sp].nome}</Text> Lv{m.lvl} {m.hp}/{maxHp(m)}
+                <Text mono bold>{i + 1}</Text> <Text mono color={COLORE_TIPO[SPECIE[m.sp].tipo]}>{nome(m)}</Text> Lv{m.lvl} {m.hp}/{maxHp(m)}
                 {i === 0 ? ' (in lotta)' : m.hp === 0 ? ' (esausto)' : ''}
               </Text>
             ))}
@@ -912,6 +1093,7 @@ const Gioco: ClientModule<any, Stato> = (props: Props, surface) => {
         ) : (
         <Box flexDirection="column" marginTop={1}>
           {grafica && giaPreso && <Text mono dimColor>◓ {dn.nome} è già nel tuo catalogo</Text>}
+          <Text mono dimColor>Bioma {MONDI[s.mondo]!.nome}: {affinita(s.mondo)}</Text>
           {voci.map((v, i) => (
             <Text mono key={'v' + i} inverse={i === s.scelta}>
               {' '}
@@ -937,6 +1119,7 @@ const Gioco: ClientModule<any, Stato> = (props: Props, surface) => {
       if (t === '~') return <Text mono key={'c' + x} color={COL.acqua}>~~</Text>
       if (t === 'C') return <Text mono key={'c' + x} bold color={COL.centro}>C </Text>
       if (t === 'P') return <Text mono key={'c' + x} bold color={COL.portale}>()</Text>
+      if (t === 'R') return <Text mono key={'c' + x} bold color={COL.ritorno}>{'<>'}</Text>
 
       return <Text mono key={'c' + x} color={COL.sentiero}>· </Text>
     })
@@ -958,7 +1141,7 @@ const Gioco: ClientModule<any, Stato> = (props: Props, surface) => {
 
           return (
             <Text mono key={'s' + i} bold={i === 0} dimColor={m.hp === 0}>
-              <Text mono color={COLORE_TIPO[d.tipo]}>{d.nome}</Text> Lv{m.lvl} {m.hp}/{maxHp(m)}
+              <Text mono color={COLORE_TIPO[d.tipo]}>{nome(m)}</Text> Lv{m.lvl} {m.hp}/{maxHp(m)}
               {'  '}
             </Text>
           )
@@ -975,7 +1158,7 @@ const Gioco: ClientModule<any, Stato> = (props: Props, surface) => {
               </Text>
               {s.box.slice(s.scambio.pagina * PER_PAGINA, (s.scambio.pagina + 1) * PER_PAGINA).map((m, i) => (
                 <Text mono key={'b' + i}>
-                  <Text mono bold>{i + 1}</Text> <Text mono color={COLORE_TIPO[SPECIE[m.sp].tipo]}>{SPECIE[m.sp].nome}</Text> Lv{m.lvl} {m.hp}/{maxHp(m)}
+                  <Text mono bold>{i + 1}</Text> <Text mono color={COLORE_TIPO[SPECIE[m.sp].tipo]}>{nome(m)}</Text> Lv{m.lvl} {m.hp}/{maxHp(m)}
                 </Text>
               ))}
               <Text mono dimColor>{s.scambio.rilascia ? 'R torna a scambiare' : 'R per rilasciare un Mostrino'} · B o 0 chiude il box</Text>
@@ -983,11 +1166,11 @@ const Gioco: ClientModule<any, Stato> = (props: Props, surface) => {
           ) : (
             <Box flexDirection="column">
               <Text mono bold color={COL.io}>
-                Entra {SPECIE[s.box[s.scambio.entra]!.sp].nome}: chi esce dalla squadra? Premi il numero
+                Entra {nome(s.box[s.scambio.entra]!)}: chi esce dalla squadra? Premi il numero
               </Text>
               {s.squadra.map((m, i) => (
                 <Text mono key={'q' + i}>
-                  <Text mono bold>{i + 1}</Text> <Text mono color={COLORE_TIPO[SPECIE[m.sp].tipo]}>{SPECIE[m.sp].nome}</Text> Lv{m.lvl} {m.hp}/{maxHp(m)}
+                  <Text mono bold>{i + 1}</Text> <Text mono color={COLORE_TIPO[SPECIE[m.sp].tipo]}>{nome(m)}</Text> Lv{m.lvl} {m.hp}/{maxHp(m)}
                 </Text>
               ))}
               <Text mono dimColor>B o 0 annulla lo scambio</Text>
@@ -1002,12 +1185,13 @@ const Gioco: ClientModule<any, Stato> = (props: Props, surface) => {
               <Text mono bold>{i + 1}</Text> {a.nome} ({a.descr}) · {a.prezzo} monete · ne hai {scorta(s, a.id)}/{a.max}
             </Text>
           ))}
-          <Text mono dimColor>Premi il numero per comprare · M o 0 chiude il negozio</Text>
+          <Text mono dimColor>Premi il numero per comprare · M o 0 chiude il negozio · muoviti per uscire</Text>
         </Box>
       ) : (
-        s.box.length > 0 && <Text mono dimColor>Box: {s.box.map(m => SPECIE[m.sp].nome + ' Lv' + m.lvl).join(', ')}</Text>
+        s.box.length > 0 && <Text mono dimColor>Box: {s.box.map(m => nome(m) + ' Lv' + m.lvl).join(', ')}</Text>
       )}
       {alCentro(s) && !s.scambio && !s.negozio && <Text mono color={COL.centro}>Sei al Centro cure: M apre il negozio</Text>}
+      {!s.scambio && !s.negozio && <Text mono dimColor>Bioma {MONDI[s.mondo]!.nome}: {affinita(s.mondo)} · Lv {MONDI[s.mondo]!.lvlMin}-{MONDI[s.mondo]!.lvlMax}</Text>}
       {!s.scambio && !s.negozio && <Text mono dimColor>Frecce/WASD muovi · Q capofila · B box{s.cure > 0 ? ` · C cura (${s.cure})` : ''}{s.cureForti > 0 ? ` · X super cura (${s.cureForti})` : ''} · P menu{portaleAperto(s) ? ' · portale aperto' : ''}</Text>}
     </Box>
   )
