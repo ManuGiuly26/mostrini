@@ -317,6 +317,11 @@ export function svgLotta(s: Stato): string {
     (s.lancio ? sfera(270, 84, 2) : '') +
     riquadro(nem, 10, 12, 140, false, s.catalogo.includes(nem.sp)) +
     riquadro(io, 168, 140, 142, true) +
+    // Contro un allenatore: una sfera per ogni Mostrino che gli resta, e il suo nome.
+    (s.allenatore
+      ? Array.from({ length: s.allenatore.squadra.length + 1 }, (_, i) => sfera(12 + i * 13, 48, 1.5)).join('') +
+        `<text x="${12 + (s.allenatore.squadra.length + 1) * 13 + 4}" y="57" font-size="8" fill="${NERO}" ${FONT}>${esc(s.allenatore.nome)}</text>`
+      : '') +
     // Una sfera per ogni Mostrino della squadra (al massimo 3), grigia se è esausto.
     s.squadra.map((m, i) => (m.hp > 0 ? sfera(170 + i * 13, 186, 1.5) : sferaVuota(170 + i * 13, 186, 1.5))).join('')
 
@@ -342,9 +347,25 @@ export function svgInizio(): string {
   return svg(320, 120, corpo)
 }
 
+// Il menu principale: il titolo con i tre Mostrini iniziali.
+export function svgMenu(): string {
+  const corpo =
+    `<rect width="320" height="120" fill="#e4f6ff"/>` +
+    `<rect y="84" width="320" height="36" fill="#c8f0b0"/>` +
+    `<text x="160" y="28" font-size="22" fill="${NERO}" text-anchor="middle" ${FONT}>MOSTRINI</text>` +
+    INIZIALI.map((sp, i) => {
+      const cx = 70 + i * 90
+
+      return `<ellipse cx="${cx}" cy="104" rx="30" ry="6" fill="#9ed88a" shape-rendering="auto"/>` + mostro(sp, cx - 18, 62, 3)
+    }).join('')
+
+  return svg(320, 120, corpo)
+}
+
 export function svgPer(s0: Stato): { source: string; alt: string } {
   // Uno stato di una versione precedente può non avere mondo e box.
   const s: Stato = { ...s0, mondo: MONDI[s0.mondo] ? s0.mondo : 0, box: s0.box ?? [], cure: s0.cure ?? 0, cureForti: s0.cureForti ?? 0, monete: s0.monete ?? 0 }
+  if (s.modo === 'menu') return { source: svgMenu(), alt: 'Mostrini: menu principale' }
   if (s.modo === 'inizio') return { source: svgInizio(), alt: 'Scegli il tuo primo Mostrino' }
   if (s.modo === 'lotta' && s.nemico && s.squadra[0]) {
     return { source: svgLotta(s), alt: `Lotta contro ${SPECIE[s.nemico.sp]?.nome}` }
