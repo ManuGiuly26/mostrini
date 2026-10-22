@@ -1038,7 +1038,7 @@ export function svgLotta(s: Stato): string {
     mostro(nem, 470 - (SW * 4) / 2, 190 - PIEDI * 4, 4) +
     mostro(io, 170 - (SW * 5) / 2, 366 - PIEDI * 5, 5, true) +
     (s.lancio ? sfera8(548, 160, 3, false, COLORE_SFERA[s.lanciata ?? 0]) : '') +
-    riquadro(nem, 20, 24, 300, false, s.catalogo.includes(nem.sp)) +
+    riquadro(nem, 20, 24, 300, false, !!s.catturati?.includes(nem.sp)) +
     riquadro(io, 324, 262, 300, true) +
     // Contro un allenatore: una sfera per ogni Mostrino che gli resta, e il suo nome.
     (s.allenatore
@@ -1102,9 +1102,9 @@ const COLORE_TIPO: Record<string, string> = {
 export function svgCatalogo(s: Stato): string {
   const cv = s.catalogoVista ?? { mondo: s.mondo, sel: 0 }
   const voci = vociCatalogo(s, cv.mondo)
-  const presi = voci.filter(v => v.preso).length
+  const presi = voci.filter(v => v.registrato).length
   let corpo =
-    `<rect width="640" height="420" fill="#2c2a48"/>` +
+    `<rect width="640" height="580" fill="#2c2a48"/>` +
     `<rect width="640" height="52" fill="#423e6c"/>` +
     scritta(20, 34, `Catalogo · ${MONDI[cv.mondo]!.nome}`, 22, '#ffffff') +
     scritta(470, 34, `${presi}/${voci.length}`, 22, presi === voci.length ? '#ffd84c' : '#ffffff', 'end') +
@@ -1117,8 +1117,8 @@ export function svgCatalogo(s: Stato): string {
     const y = 62 + Math.floor(i / 3) * 118
     const scelto = i === cv.sel
     const d = SPECIE[v.sp]!
-    // catturato: crema con la sfera; visto: a colori su fondo chiaro; mancante: ombra; mondo chiuso: ???
-    const fondo = v.preso ? '#fbf5e4' : v.visto ? '#ebe7f3' : v.noto ? '#d8d4e4' : '#a8a4bc'
+    // nel catalogo: crema (con la sfera se catturato); visto: a colori su fondo chiaro; mancante: ombra; mondo chiuso: ???
+    const fondo = v.registrato ? '#fbf5e4' : v.visto ? '#ebe7f3' : v.noto ? '#d8d4e4' : '#a8a4bc'
     corpo +=
       `<rect x="${x}" y="${y}" width="198" height="110" rx="8" fill="${scelto ? '#ffd84c' : '#5a5680'}" shape-rendering="auto"/>` +
       `<rect x="${x + 4}" y="${y + 4}" width="190" height="102" rx="5" fill="${fondo}" shape-rendering="auto"/>` +
@@ -1126,7 +1126,7 @@ export function svgCatalogo(s: Stato): string {
       mostroIn({ sp: v.sp }, x + 46, y + 94, 2, !v.visto) +
       scritta(x + 92, y + 28, '#' + String(v.numero).padStart(2, '0'), 15, '#6c6880') +
       scritta(x + 92, y + 52, v.noto ? d.nome : '???', 17, v.visto ? NERO : '#4a4660') +
-      (v.visto && !v.preso ? scritta(x + 186, y + 100, 'visto', 13, '#6c6880', 'end') : '')
+      (v.visto && !v.registrato ? scritta(x + 186, y + 100, 'visto', 13, '#6c6880', 'end') : '')
     if (v.noto) {
       corpo +=
         `<rect x="${x + 92}" y="${y + 62}" width="84" height="22" rx="5" fill="${COLORE_TIPO[d.tipo] ?? '#888'}" shape-rendering="auto"/>` +
@@ -1135,8 +1135,29 @@ export function svgCatalogo(s: Stato): string {
     if (v.preso) corpo += sfera8(x + 166, y + 14, 2)
     if (v.raro && v.noto) corpo += scritta(x + 92, y + 100, 'raro', 13, '#b8862c')
   })
+  // Sotto le schede, la linea evolutiva del Mostrino scelto: la forma base a colori se è nel catalogo,
+  // le evoluzioni a colori solo se un tuo Mostrino le ha raggiunte, le altre in ombra.
+  const v = voci[cv.sel] ?? voci[0]!
+  const d = SPECIE[v.sp]!
+  corpo += `<rect x="14" y="420" width="612" height="150" rx="8" fill="#423e6c" shape-rendering="auto"/>`
+  if (!v.registrato) {
+    corpo += scritta(320, 500, v.noto ? `Sconfiggi o cattura ${d.nome} per vedere le sue evoluzioni` : '???', 17, '#d8d4e4', 'middle')
+  } else {
+    const nomi = [d.nome, d.evo[0], d.evo[1]]
+    const livelli = ['base', 'Lv 15', 'Lv 35']
+    nomi.forEach((n, k) => {
+      const cx = 118 + k * 202
+      const avuta = k === 0 || v.stadio >= k
+      corpo +=
+        `<ellipse cx="${cx}" cy="530" rx="44" ry="7" fill="#2c2a48"/>` +
+        mostroIn({ sp: v.sp, evo: k }, cx, 532, k === 2 ? 1.6 : 1.8, !avuta) +
+        scritta(cx, 552, avuta ? n : '???', 15, avuta ? '#ffffff' : '#a8a4bc', 'middle') +
+        scritta(cx, 566, livelli[k]!, 12, '#a8a4bc', 'middle') +
+        (k < 2 ? scritta(cx + 101, 500, '→', 22, '#a8a4bc', 'middle') : '')
+    })
+  }
 
-  return svg(640, 420, corpo)
+  return svg(640, 580, corpo)
 }
 
 export function svgPer(s0: Stato): { source: string; alt: string } {
