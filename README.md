@@ -21,7 +21,7 @@ Mostrini è un mini gioco di creature da catturare che si apre in un pannello de
   - Deserto Rovente: Capopalestra Ambra (terra), Medaglia Duna
   - Palude Nebbiosa: Capopalestra Ortica (veleno), Medaglia Miasma
   - Rovine Spettrali: Capopalestra Corvino (spettro), Medaglia Eclisse: chi la vince è il campione di Mostrini
-- **Portali:** la medaglia della palestra apre il portale viola (`P`) verso il mondo dopo. Il portale verde acqua (`R`) riporta al mondo prima.
+- **Portali:** per aprire il portale viola (`P`) verso il mondo dopo servono **due cose**: la medaglia della palestra del mondo **e** il catalogo del mondo completo (tutti e 9 i suoi Mostrini). Se ci provi prima, il gioco ti dice cosa ti manca. Il portale verde acqua (`R`) riporta al mondo prima.
 - **Livelli legati al mondo:** i Mostrini selvatici e gli allenatori hanno i livelli del mondo in cui ti trovi, non quelli della tua squadra. Gli allenatori stanno nella metà alta della fascia.
 - **Bioma:** ogni mondo potenzia del 5% le mosse di due tipi e indebolisce del 5% quelle di altri due. In lotta le mosse favorite hanno ▲5%, quelle sfavorite ▼5%, e sotto la mappa trovi il bioma del mondo.
   - Prateria: erba e normale +5%, ghiaccio e spettro -5%
@@ -33,8 +33,8 @@ Mostrini è un mini gioco di creature da catturare che si apre in un pannello de
   - **Evoluto** (Lv 15): 20% in più di PS e attacco, più grande, con le braccine, lo sguardo deciso e i colori più intensi.
   - **Forma finale** (Lv 35): 45% in più di PS e attacco, ancora più grande, con corona e ali, e in lotta un alone dorato.
   - Dal Deserto in poi gli allenatori hanno Mostrini già evoluti (nelle Rovine, dal livello 35, nella forma finale), e circa un selvatico su tre lo è.
-- **Catalogo** (tasto `L` sulla mappa): una pagina per mondo con i suoi 9 Mostrini. Nel catalogo entrano solo i Mostrini che **catturi**: hanno la sfera, il disegno a colori e la linea evolutiva. Quelli che hai incontrato o sconfitto senza catturarli sono **visti**: a colori, ma senza sfera. Quelli che mancano sono un'ombra col nome e il tipo, così sai chi cercare. Nei mondi non ancora aperti anche il nome resta `???`. Con le frecce scegli un Mostrino e leggi la sua scheda, con `1`-`5` cambi mondo, con `L` o `0` chiudi.
-- **Catalogo per mondo:** il conto in alto nella mappa considera i Mostrini catturati di quel mondo e dei mondi prima: 9 nella Prateria, 18 nelle Vette Gelate e così via fino a 45.
+- **Catalogo** (tasto `L` sulla mappa): una pagina per mondo con i suoi 9 Mostrini. Nel catalogo entra ogni Mostrino che **sconfiggi o catturi**; quelli che hai catturato hanno anche la **sfera** accanto al nome. Quelli che hai solo incontrato (per esempio scappando) sono **visti**: a colori, ma non contano. Quelli che mancano sono un'ombra col nome e il tipo, così sai chi cercare. Nei mondi non ancora aperti anche il nome resta `???`. Sotto le schede c'è la **linea evolutiva** del Mostrino scelto, con le sue tre forme disegnate (base, Lv 15 e Lv 35): le evoluzioni che un tuo Mostrino ha già raggiunto sono a colori col loro nome, le altre in ombra con `???`. Con le frecce scegli un Mostrino e leggi la sua scheda, con `1`-`5` cambi mondo, con `L` o `0` chiudi.
+- **Catalogo per mondo:** il conto in alto nella mappa considera i Mostrini nel catalogo (sconfitti o catturati) di quel mondo e dei mondi prima: 9 nella Prateria, 18 nelle Vette Gelate e così via fino a 45.
 - **Allenatori:** ogni tanto, nell'erba alta o sul sentiero, un allenatore ti sfida con la sua squadra (2 Mostrini nella Prateria, 3 negli altri mondi). Non puoi catturare i suoi Mostrini né scappare; se li batti tutti vinci un premio in monete.
 - **In lotta**, sotto il tuo riquadro, una sfera per ogni Mostrino della tua squadra (grigia se è esausto). Una piccola sfera accanto al nome dell'avversario ti dice che quella specie l'hai già catturata (non basta averla sconfitta). Contro un allenatore vedi anche quanti Mostrini gli restano. Con `5` dai il cambio a un altro Mostrino della squadra: ti costa il turno.
 - **Squadra e box:** una squadra può avere fino a **3 Mostrini**: quelli che catturi in più finiscono nel **box**. Con `B` apri il box: premi il numero del Mostrino che vuoi far entrare e poi il numero di quello della squadra che deve uscire. Nel box, `R` passa a **rilascia**: il numero che premi libera quel Mostrino (resta comunque nel catalogo). `B` o `0` chiude il box.
@@ -92,9 +92,11 @@ Mentre Claude lavora i comandi aspettano in coda, quindi Mostrini **si apre da s
 
 Cammina nell'erba alta per incontrare i Mostrini selvatici. Indeboliscili prima di lanciare la sfera: più sono stanchi, più è facile catturarli. Quando la squadra è a terra passa dal Centro cure, e quando finisci le sfere comprane altre al negozio.
 
-Batti la palestra della Prateria per aprire il portale verso le Vette Gelate, poi quella delle Vette per il Deserto Rovente, e così via fino alle Rovine Spettrali, dove la palestra di Corvino ti fa campione. Il portale `R` di ogni mondo ti riporta a quello prima.
+Batti la palestra della Prateria e completa il suo catalogo per aprire il portale verso le Vette Gelate, poi fai lo stesso nelle Vette per il Deserto Rovente, e così via fino alle Rovine Spettrali, dove la palestra di Corvino ti fa campione. Il portale `R` di ogni mondo ti riporta a quello prima.
 
-**Partite delle versioni prima della 0.8.0:** sfere e cure passano nello zaino nuovo (con mega sfere e super cure nella seconda casella). Nel catalogo restano le specie che hai ancora in squadra o nel box, le altre diventano viste. Le palestre dei mondi che avevi già lasciato alle spalle contano come vinte; quella del mondo dove sei va battuta per andare avanti.
+**Partite della 0.8.0:** i Mostrini che erano rimasti "visti" tornano nel catalogo, e la sfera resta a quelli catturati.
+
+**Partite delle versioni prima della 0.8.0:** sfere e cure passano nello zaino nuovo (con mega sfere e super cure nella seconda casella). Nel catalogo restano tutte le specie che avevi trovato; la sfera va a quelle che hai ancora in squadra o nel box. Le palestre dei mondi che avevi già lasciato alle spalle contano come vinte; quella del mondo dove sei va battuta per andare avanti.
 
 **Sul telefono non si può giocare:** l'app Claude per telefono non mostra il pannello di Mostrini. Se scrivi `/mostrini` dal telefono te lo dice; gioca dal computer.
 
