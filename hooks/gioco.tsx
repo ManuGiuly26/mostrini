@@ -6,7 +6,8 @@ export type { Tipo, Mostrino, Modo, Stato } from '../types'
 // ---------- Dati di gioco ----------
 
 // mondo: 0 la Prateria, 1 le Vette Gelate, 2 il Deserto Rovente, 3 la Palude Nebbiosa, 4 le Rovine Spettrali.
-// Ogni mondo si apre col catalogo del mondo prima completo. evo: i nomi della forma evoluta e di quella finale.
+// Per aprire il portale di un mondo servono la medaglia della sua palestra e il suo catalogo completo.
+// evo: i nomi della forma evoluta e di quella finale.
 export type Specie = { nome: string; evo: [string, string]; tipo: Tipo; hp: number; atk: number; mondo: number; arte: [string, string] }
 
 export const SPECIE: Record<string, Specie> = {
@@ -255,7 +256,7 @@ export const MAPPA = MONDI[0]!.mappa
 export const CENTRO = { x: 2, y: 2 }
 
 // La versione mostrata nel menu: la stessa di version in .claude-plugin/plugin.json.
-export const VERSIONE = '0.8.0'
+export const VERSIONE = '0.8.1'
 
 // Le sfere e le cure: ogni mondo ne aggiunge una al negozio, più forte di quelle prima.
 // cattura: quanto moltiplica la probabilità di catturare; ps: i PS che ridà (Infinity: tutti).
@@ -309,9 +310,37 @@ export const allievi = (mondo: number) => mondo + 3
 export const vinteIn = (s: Stato, mondo: number) => s.palestre?.[mondo] ?? 0
 export const medaglia = (s: Stato, mondo: number) => vinteIn(s, mondo) > allievi(mondo)
 
-// Il portale P di un mondo si apre con la medaglia della sua palestra; l'ultimo mondo non ne ha.
+// Quanti Mostrini di quel mondo mancano ancora nel catalogo.
+export const mancantiIn = (s: Stato, mondo: number) => specieDel(mondo).filter(sp => !s.catalogo.includes(sp)).length
+
+// Il portale P di un mondo si apre con la medaglia della sua palestra e col catalogo del mondo completo;
+// l'ultimo mondo non ne ha.
 export function portaleAperto(s: Stato, mondo = s.mondo): boolean {
-  return mondo + 1 < MONDI.length && medaglia(s, mondo)
+  return mondo + 1 < MONDI.length && medaglia(s, mondo) && mancantiIn(s, mondo) === 0
+}
+
+// Cosa manca per aprire il portale del mondo dove sei.
+export function perIlPortale(s: Stato): string {
+  const servono: string[] = []
+  if (!medaglia(s, s.mondo)) servono.push(`la ${MONDI[s.mondo]!.palestra.medaglia} (palestra G)`)
+  const mancano = mancantiIn(s, s.mondo)
+  if (mancano > 0) servono.push(`${mancano} Mostrini nel catalogo di questo mondo`)
+
+  return `Il portale è chiuso: ti mancano ${servono.join(' e ')}.`
+}
+
+// La forma più evoluta che hai avuto di ogni specie, per il catalogo.
+function ricordaStadi(s: Stato, ...altri: Mostrino[]): Stato {
+  const stadi = { ...(s.stadi ?? {}) }
+  let cambiato = false
+  for (const m of [...s.squadra, ...s.box, ...altri]) {
+    if ((stadi[m.sp] ?? -1) < stadio(m)) {
+      stadi[m.sp] = stadio(m)
+      cambiato = true
+    }
+  }
+
+  return cambiato || !s.stadi ? { ...s, stadi } : s
 }
 
 // +5% o -5% a seconda del tipo della mossa e del bioma del mondo.
@@ -350,7 +379,10 @@ export function statoIniziale(): Stato {
     squadra: [],
     box: [],
     catalogo: [],
+    catturati: [],
     visti: [],
+    stadi: {},
+    versioneCatalogo: 2,
     sfere: [5, 0, 0, 0, 0],
     cure: [2, 0, 0, 0, 0],
     palestre: MONDI.map(() => 0),
@@ -399,7 +431,20 @@ export function normalizza(salvato: Partial<Stato>): Stato {
     cure: caselle(salvato.cure, salvato.cureForti, 2),
     megaSfere: undefined,
     cureForti: undefined,
-    catalogo: vecchia ? posseduti : s.catalogo,
+    // Dalla 0.8.1 il catalogo conta anche chi hai sconfitto: le partite precedenti recuperano
+    // nel catalogo i Mostrini rimasti tra i visti, e i catturati tengono la sfera.
+    catalogo: (salvato.versioneCatalogo ?? 0) >= 2 ? s.catalogo : [...new Set([...s.catalogo, ...(s.visti ?? []), ...posseduti])],
+    catturati:
+      (salvato.versioneCatalogo ?? 0) >= 2
+        ? (salvato.catturati ?? [])
+        : [...new Set([...(vecchia ? [] : s.catalogo), ...posseduti])],
+    versioneCatalogo: 2,
+    stadi: (() => {
+      const st: Record<string, number> = { ...(salvato.stadi ?? {}) }
+      for (const m of [...squadra, ...box]) st[m.sp] = Math.max(st[m.sp] ?? 0, stadio(m))
+
+      return st
+    })(),
     visti: vecchia ? [...new Set([...s.catalogo, ...posseduti])] : (s.visti ?? []),
     palestre: MONDI.map((_, i) => (salvato.palestre ? (salvato.palestre[i] ?? 0) : i < mondo ? allievi(i) + 1 : 0)),
     squadra,
@@ -422,13 +467,20 @@ function vedi(s: Stato, sp: string): Stato {
   return s.visti?.includes(sp) ? s : { ...s, visti: [...(s.visti ?? []), sp] }
 }
 
-// Solo catturare mette una specie nel catalogo, con la sfera accanto al nome.
-function registra(s: Stato, sp: string): { s: Stato; righe: string[] } {
-  const visto = vedi(s, sp)
-  if (s.catalogo.includes(sp)) return { s: visto, righe: [] }
-  const n = { ...visto, catalogo: [...s.catalogo, sp] }
+// Sconfiggere o catturare mette una specie nel catalogo; catturarla le dà anche la sfera accanto al nome.
+// Quando il catalogo del mondo si completa e hai già la medaglia, si apre il portale.
+function registra(s: Stato, sp: string, catturato = false): { s: Stato; righe: string[] } {
+  let n = vedi(s, sp)
+  if (catturato && !(n.catturati ?? []).includes(sp)) n = { ...n, catturati: [...(n.catturati ?? []), sp] }
+  if (s.catalogo.includes(sp)) return { s: n, righe: [] }
+  n = { ...n, catalogo: [...s.catalogo, sp] }
   const righe = [`Nuovo nel catalogo: ${SPECIE[sp].nome}!`]
-  if (n.catalogo.length === Object.keys(SPECIE).length) righe.push('Hai catturato tutti i Mostrini. Il catalogo è completo!')
+  const mondo = SPECIE[sp]!.mondo
+  if (mancantiIn(n, mondo) === 0) {
+    righe.push(`Catalogo ${MONDI[mondo]!.nel} completo!`)
+    if (!portaleAperto(s) && portaleAperto(n)) righe.push(`Il portale (P) verso ${MONDI[s.mondo + 1]!.nome} è aperto.`)
+  }
+  if (n.catalogo.length === Object.keys(SPECIE).length) righe.push('Hai trovato tutti i Mostrini. Il catalogo è completo!')
 
   return { s: n, righe }
 }
@@ -444,7 +496,9 @@ export function scegliIniziale(s: Stato, i: number): Stato {
     modo: 'mappa',
     squadra: [nuovo(sp, 5)],
     catalogo: [sp],
+    catturati: [sp],
     visti: [sp],
+    stadi: { [sp]: 0 },
     log: [`Hai scelto ${SPECIE[sp].nome}! Cammina nell'erba alta per trovare Mostrini.`],
   }
 }
@@ -557,6 +611,7 @@ export function muovi(s: Stato, dx: number, dy: number, rnd: () => number = Math
   const nx = s.x + dx
   const ny = s.y + dy
   const t = casellaDi(s, nx, ny)
+  if (MONDI[s.mondo]!.mappa[ny]?.[nx] === 'P' && t === '#' && s.mondo + 1 < MONDI.length) return conLog(s, perIlPortale(s))
   if (t === undefined || t === '#' || t === '~') return s
   const n: Stato = { ...s, x: nx, y: ny }
   if (t === 'C') return conLog(curaTutti(n), 'Centro cure: squadra in forma. Premi M per il negozio.')
@@ -654,7 +709,10 @@ function vittoria(s: Stato, rnd: () => number): Stato {
   )
   const monete = s.monete + vinte
   const all = s.allenatore
-  const visto = vedi(s, nem.sp)
+  // Lo sconfitto entra nel catalogo; ricordaStadi tiene le evoluzioni raggiunte dalla tua squadra.
+  const reg = registra(ricordaStadi({ ...s, squadra }), nem.sp)
+  const visto = reg.s
+  righe.push(...reg.righe)
   if (all && all.squadra.length > 0) {
     const [prossimo, ...resto] = all.squadra
     const n = vedi({ ...visto, nemico: prossimo!, lancio: false, squadra, monete, allenatore: { ...all, squadra: resto } }, prossimo!.sp)
@@ -670,7 +728,16 @@ function vittoria(s: Stato, rnd: () => number): Stato {
     const m = MONDI[s.mondo]!
     if (all.palestra === 'capo') {
       const dopo = MONDI[s.mondo + 1]
-      righe.push(`Hai vinto la ${m.palestra.medaglia}! ${dopo ? `Il portale (P) verso ${dopo.nome} è aperto.` : 'Sei il campione di Mostrini!'}`)
+      const mancano = mancantiIn(n, s.mondo)
+      righe.push(
+        `Hai vinto la ${m.palestra.medaglia}! ${
+          !dopo
+            ? 'Sei il campione di Mostrini!'
+            : mancano === 0
+              ? `Il portale (P) verso ${dopo.nome} è aperto.`
+              : `Per aprire il portale (P) ti mancano ancora ${mancano} Mostrini nel catalogo di questo mondo.`
+        }`,
+      )
     } else if (all.palestra) {
       const fatte = palestre[s.mondo]!
       righe.push(fatte === allievi(s.mondo) ? `Allievi battuti: ora ti aspetta ${m.palestra.capo} (G).` : `Palestra: ${fatte}/${allievi(s.mondo)} allievi battuti.`)
@@ -718,7 +785,7 @@ export function lancia(s: Stato, i: number, rnd: () => number = Math.random): St
   if (rnd() < probCattura(s, nem, i)) {
     const preso = { ...nem, hp: maxHp(nem) }
     const pieno = n.squadra.length >= SQUADRA_MAX
-    const r = registra({ ...n, modo: 'mappa', nemico: null }, nem.sp)
+    const r = registra(ricordaStadi({ ...n, modo: 'mappa', nemico: null }, preso), nem.sp, true)
     const fine = pieno ? { ...r.s, box: [...r.s.box, preso] } : { ...r.s, squadra: [...r.s.squadra, preso] }
 
     return conLog(
@@ -908,18 +975,29 @@ export function apriCatalogo(s: Stato): Stato {
 // si vede il nome; nei mondi ancora chiusi restano ???.
 export const mondoSbloccato = (s: Stato, mondo: number) => mondo <= s.mondo || portaleAperto(s, mondo - 1)
 
-// preso: catturato, con la sfera; visto: incontrato o sconfitto, a colori ma senza sfera;
-// noto: se ne vede almeno il nome.
-export type Voce = { sp: string; numero: number; preso: boolean; visto: boolean; noto: boolean; raro: boolean }
+// registrato: nel catalogo (sconfitto o catturato); preso: catturato, con la sfera;
+// visto: almeno incontrato, a colori; noto: se ne vede almeno il nome;
+// stadio: la forma più evoluta che hai avuto (-1 se non l'hai mai avuto).
+export type Voce = { sp: string; numero: number; registrato: boolean; preso: boolean; visto: boolean; noto: boolean; raro: boolean; stadio: number }
 
 export function vociCatalogo(s: Stato, mondo: number): Voce[] {
   const tutte = Object.keys(SPECIE)
 
   return specieDel(mondo).map(sp => {
-    const preso = s.catalogo.includes(sp)
-    const visto = preso || !!s.visti?.includes(sp)
+    const registrato = s.catalogo.includes(sp)
+    const preso = !!s.catturati?.includes(sp)
+    const visto = registrato || preso || !!s.visti?.includes(sp)
 
-    return { sp, numero: tutte.indexOf(sp) + 1, preso, visto, noto: visto || mondoSbloccato(s, mondo), raro: MONDI[mondo]!.raro === sp }
+    return {
+      sp,
+      numero: tutte.indexOf(sp) + 1,
+      registrato,
+      preso,
+      visto,
+      noto: visto || mondoSbloccato(s, mondo),
+      raro: MONDI[mondo]!.raro === sp,
+      stadio: s.stadi?.[sp] ?? (preso ? 0 : -1),
+    }
   })
 }
 
@@ -929,14 +1007,19 @@ export function descrizione(v: Voce): string {
   const num = '#' + String(v.numero).padStart(2, '0')
   const dove = MONDI[d.mondo]!
   if (!v.noto) return `${num} ???: vive ${dove.nel}, che non hai ancora aperto.`
-  if (v.visto && !v.preso) {
-    return `${num} ${d.nome} (${d.tipo}): l'hai visto ma non ancora catturato. Vive ${dove.nel}${v.raro ? ' ed è raro' : ''}.`
+  if (v.visto && !v.registrato) {
+    return `${num} ${d.nome} (${d.tipo}): l'hai visto ma non ancora sconfitto né catturato. Vive ${dove.nel}${v.raro ? ' ed è raro' : ''}.`
   }
-  if (!v.preso) {
-    return `${num} ${d.nome} (${d.tipo}): manca! Vive ${dove.nel}${v.raro ? ' ed è raro' : ''}. Catturalo per registrarlo.`
+  if (!v.registrato) {
+    return `${num} ${d.nome} (${d.tipo}): manca! Vive ${dove.nel}${v.raro ? ' ed è raro' : ''}. Sconfiggilo o catturalo per registrarlo.`
   }
+  const forme = ['la forma base', `${d.evo[0]}`, `${d.evo[1]}`]
 
-  return `${num} ${d.nome} (${d.tipo})${v.raro ? ', raro' : ''}: si evolve in ${d.evo[0]} al Lv ${LIVELLI_EVO[0]} e in ${d.evo[1]} al Lv ${LIVELLI_EVO[1]}.`
+  return (
+    `${num} ${d.nome} (${d.tipo})${v.raro ? ', raro' : ''}: ${v.preso ? 'catturato' : 'sconfitto, non ancora catturato'}. ` +
+    `Si evolve in ${d.evo[0]} al Lv ${LIVELLI_EVO[0]} e in ${d.evo[1]} al Lv ${LIVELLI_EVO[1]}.` +
+    (v.stadio >= 0 ? ` La forma più evoluta che hai avuto: ${forme[v.stadio]}.` : '')
+  )
 }
 
 // Frecce: sinistra e destra scorrono i Mostrini (e passano al mondo vicino), su e giù di una riga;
@@ -1289,7 +1372,7 @@ const Gioco: ClientModule<any, Stato> = (props: Props, surface) => {
       s.allenatore ? 'Scappa (non da una sfida)' : 'Scappa',
     ]
     // La sfera accanto al nome solo per le specie catturate, non per quelle soltanto sconfitte.
-    const giaPreso = s.catalogo.includes(nem.sp)
+    const giaPreso = !!s.catturati?.includes(nem.sp)
     const palestra = s.allenatore?.palestra
 
     return (
@@ -1356,7 +1439,7 @@ const Gioco: ClientModule<any, Stato> = (props: Props, surface) => {
           </Box>
         ) : (
         <Box flexDirection="column" marginTop={1}>
-          {grafica && giaPreso && <Text mono dimColor>◓ {dn.nome} è già nel tuo catalogo</Text>}
+          {grafica && giaPreso && <Text mono dimColor>◓ {dn.nome}: l'hai già catturato</Text>}
           <Text mono dimColor>Bioma {MONDI[s.mondo]!.nome}: {affinita(s.mondo)}</Text>
           {voci.map((v, i) => (
             <Text mono key={'v' + i} inverse={i === s.scelta}>
