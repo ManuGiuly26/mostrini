@@ -12,8 +12,14 @@ export type Stato = {
   squadra: Mostrino[]
   // i Mostrini catturati con la squadra già piena
   box: Mostrino[]
-  // le specie catturate: nel catalogo e in lotta hanno la sfera
+  // le specie nel catalogo: catturate o sconfitte
   catalogo: string[]
+  // le specie catturate: nel catalogo e in lotta hanno la sfera
+  catturati?: string[]
+  // per ogni specie la forma più evoluta che hai avuto (0 base, 1 evoluta, 2 finale)
+  stadi?: Record<string, number>
+  // 2: catalogo con catturati e sconfitti (dalla 0.8.1)
+  versioneCatalogo?: number
   // le specie incontrate o sconfitte, catturate o no
   visti?: string[]
   // le sfere e le cure nello zaino, una casella per tipo: 0 la Sfera e la Cura, 1 la Mega sfera
