@@ -12,15 +12,12 @@ export type Stato = {
   squadra: Mostrino[]
   // i Mostrini catturati con la squadra già piena
   box: Mostrino[]
-  // le specie nel catalogo: catturate o sconfitte
+  // le forme catturate (la specie per la forma base, "specie:1" e "specie:2" per l'evoluta e la finale):
+  // nel catalogo e in lotta hanno la sfera
   catalogo: string[]
-  // le specie catturate: nel catalogo e in lotta hanno la sfera
-  catturati?: string[]
-  // per ogni specie la forma più evoluta che hai avuto (0 base, 1 evoluta, 2 finale)
-  stadi?: Record<string, number>
-  // 2: catalogo con catturati e sconfitti (dalla 0.8.1)
-  versioneCatalogo?: number
-  // le specie incontrate o sconfitte, catturate o no
+  // le specie sconfitte o catturate in una qualunque forma: servono, con la medaglia, ad aprire i portali
+  sconfitti?: string[]
+  // le forme incontrate o sconfitte, catturate o no
   visti?: string[]
   // le sfere e le cure nello zaino, una casella per tipo: 0 la Sfera e la Cura, 1 la Mega sfera
   // e la Super cura, e così via (ogni mondo ne aggiunge una al negozio)
@@ -47,6 +44,12 @@ export type Stato = {
   allenatore?: { nome: string; squadra: Mostrino[]; palestra?: 'allievo' | 'capo' } | null
   // le lotte vinte nella palestra di ogni mondo: battuti tutti gli allievi e il capopalestra, arriva la medaglia
   palestre?: number[]
+  // le evoluzioni appena avvenute, da mostrare una alla volta con l'animazione (da e a sono gli stadi)
+  evoluzioni?: { sp: string; da: number; a: number }[]
+  // le schermate di festa da mostrare: tutte le medaglie vinte, il catalogo completo
+  feste?: ('medaglie' | 'catalogo')[]
+  // dentro la palestra (entrando dalla G): la posizione nel salone; fuori x e y restano davanti alla G
+  inPalestra?: { x: number; y: number } | null
   // le partite delle versioni precedenti: sfere e cure erano numeri, con mega sfere e super cure a parte
   megaSfere?: number
   cureForti?: number
@@ -55,8 +58,13 @@ export type Stato = {
   // nel menu: si sta scegliendo quale partita cancellare, e quale aspetta la conferma
   cancella?: boolean
   daCancellare?: number | null
-  // il catalogo aperto con L: la pagina del mondo mostrata e il Mostrino scelto (0-8)
+  // il catalogo aperto con L: la pagina del mondo mostrata e la forma scelta
   catalogoVista?: { mondo: number; sel: number } | null
+  // il galleggiante in acqua dopo una pescata andata a vuoto: resta lì finché non ti muovi
+  pesca?: { x: number; y: number } | null
+  // in lotta, i colpi dell'ultimo turno da animare, in ordine: chi attacca e con che mossa
+  // ('botta' è la Botta, uguale per tutti; altrimenti il tipo della mossa)
+  colpi?: { chi: 'io' | 'nemico'; mossa: Tipo | 'botta' }[]
 }
 
 // Le partite salvate, una per casella, e l'ultima giocata.
