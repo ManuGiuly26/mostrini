@@ -2,7 +2,7 @@ import { atom, read, update } from 'claude-code'
 import type { Register } from 'claude-code'
 
 import type { Salvataggi, Stato } from '../types'
-import { svgPer } from './grafica.ts'
+import { svgPer, misureDi, riempie } from './grafica.ts'
 import { PARTITE } from './gioco.tsx'
 
 const PANE = 'mostrini'
@@ -25,6 +25,26 @@ async function leggiSalvataggi($: any): Promise<Salvataggi> {
   if (vecchia && vecchia.modo) partite[0] = { ...vecchia, slot: 0 }
 
   return { partite, attiva: 0 }
+}
+
+// Il pannello conta larghezza e altezza in celle del carattere a spaziatura fissa dell'app:
+// circa 7 pixel per colonna e 18 per riga.
+const PIXEL_PER_COLONNA = 7
+const PIXEL_PER_RIGA = 18
+
+// La grandezza a cui mostrare un disegno: il doppio delle sue misure (1024 x 640 la lotta), ma mai
+// più largo del pannello né più alto di tre quarti della finestra, per lasciare posto ai comandi sotto.
+// Le stesse misure valgono per i disegni fermi e per quelli animati.
+function grandezza(misure: { largo: number; alto: number } | null, colonne?: number, righe?: number) {
+  if (!misure) return null
+  const limiti = [
+    misure.largo * 2,
+    colonne ? colonne * PIXEL_PER_COLONNA : Infinity,
+    righe ? (righe * PIXEL_PER_RIGA * 0.75 * misure.largo) / misure.alto : Infinity,
+  ]
+  const largo = Math.max(misure.largo / 2, Math.round(Math.min(...limiti)))
+
+  return { largo, alto: Math.round((largo * misure.alto) / misure.largo) }
 }
 
 export const register: Register = on => {
@@ -107,10 +127,22 @@ export const register: Register = on => {
     const grafica = !!Svg
     const stato = grafica ? await read($, vista) : null
     const disegno = stato ? svgPer(stato) : null
+    const misure = disegno ? grandezza(misureDi(disegno.source), e.props.bodyColumns, e.viewport?.rows) : null
 
     return (
       <Box flexDirection="column" flexGrow={1}>
-        {disegno && <Svg source={disegno.source} alt={disegno.alt} />}
+        {/* Le animazioni (evoluzione, feste, colpi in lotta) partono solo nel riquadro interattivo.
+            Disegni fermi e animati ricevono le stesse misure esplicite, così lo schermo resta grande
+            uguale; nel riquadro animato il disegno riempie il riquadro invece di avere misure sue. */}
+        {disegno && misure && (
+          <Svg
+            source={disegno.animato ? riempie(disegno.source) : disegno.source}
+            alt={disegno.alt}
+            width={misure.largo}
+            height={misure.alto}
+            {...(disegno.animato ? { isInteractive: true } : {})}
+          />
+        )}
         <el.Client key="gioco" module="./gioco.tsx" props={{ partite: salvati.partite, attiva: salvati.attiva, grafica }} flexGrow={1} />
       </Box>
     )
