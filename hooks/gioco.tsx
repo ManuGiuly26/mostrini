@@ -6,9 +6,22 @@ export type { Tipo, Mostrino, Modo, Stato } from '../types'
 // ---------- Dati di gioco ----------
 
 // mondo: 0 la Prateria, 1 le Vette Gelate, 2 il Deserto Rovente, 3 la Palude Nebbiosa, 4 le Rovine Spettrali.
-// Per aprire il portale di un mondo servono la medaglia della sua palestra e il suo catalogo completo.
+// Per aprire il portale di un mondo servono la medaglia della sua palestra e tutti i suoi Mostrini sconfitti o catturati.
 // evo: i nomi della forma evoluta e di quella finale.
-export type Specie = { nome: string; evo: [string, string]; tipo: Tipo; hp: number; atk: number; mondo: number; arte: [string, string] }
+// rarita: senza è un Mostrino comune; ogni mondo ha un raro, un epico e un leggendario.
+// I Mostrini d'acqua non stanno nell'erba alta: si trovano solo pescando.
+export type Specie = {
+  nome: string
+  evo: [string, string]
+  tipo: Tipo
+  hp: number
+  atk: number
+  mondo: number
+  arte: [string, string]
+  rarita?: Exclude<Rarita, 'comune'>
+}
+
+export type Rarita = 'comune' | 'raro' | 'epico' | 'leggendario'
 
 export const SPECIE: Record<string, Specie> = {
   braciotto: { nome: 'Braciotto', evo: ['Bracione', 'Pirodrago'], tipo: 'fuoco', hp: 19, atk: 7, mondo: 0, arte: [' ,^^, ', '(o.o)~'] },
@@ -19,7 +32,9 @@ export const SPECIE: Record<string, Specie> = {
   muschietto: { nome: 'Muschietto', evo: ['Muschione', 'Muschiosauro'], tipo: 'erba', hp: 25, atk: 5, mondo: 0, arte: [' .:. ', '{u_u}'] },
   zampetto: { nome: 'Zampetto', evo: ['Zampardo', 'Zampaleone'], tipo: 'normale', hp: 20, atk: 6, mondo: 0, arte: [' /\\_/\\', '( •ᴗ•)'] },
   piumino: { nome: 'Piumino', evo: ['Piumastro', 'Aquilastro'], tipo: 'normale', hp: 17, atk: 7, mondo: 0, arte: ['  __ ', '<(v)>'] },
-  scintillo: { nome: 'Scintillo', evo: ['Saettone', 'Fulminardo'], tipo: 'elettro', hp: 18, atk: 8, mondo: 0, arte: [' /\\/ ', '[*_*]'] },
+  scintillo: { nome: 'Scintillo', evo: ['Saettone', 'Fulminardo'], tipo: 'elettro', hp: 18, atk: 8, mondo: 0, arte: [' /\\/ ', '[*_*]'], rarita: 'raro' },
+  trifoglio: { nome: 'Trifoglio', evo: ['Quadrifoglio', 'Fortunardo'], tipo: 'erba', hp: 23, atk: 9, mondo: 0, arte: [' 8 8 ', '(^o^)'], rarita: 'epico' },
+  carpadoro: { nome: 'Carpadoro', evo: ['Carpareale', 'Dragocarpa'], tipo: 'acqua', hp: 26, atk: 10, mondo: 0, arte: [' ><> ', '(°o°)'], rarita: 'leggendario' },
   gelino: { nome: 'Gelino', evo: ['Gelone', 'Glaciardo'], tipo: 'ghiaccio', hp: 20, atk: 7, mondo: 1, arte: [' * * ', '(o~o)'] },
   nevischio: { nome: 'Nevischio', evo: ['Bufera', 'Tormenta'], tipo: 'ghiaccio', hp: 23, atk: 6, mondo: 1, arte: [' .*. ', '(-.-)'] },
   sassolo: { nome: 'Sassolo', evo: ['Sassone', 'Granitone'], tipo: 'roccia', hp: 26, atk: 6, mondo: 1, arte: ['  __ ', '[o_o]'] },
@@ -28,7 +43,9 @@ export const SPECIE: Record<string, Specie> = {
   brinella: { nome: 'Brinella', evo: ['Galaverna', 'Borealia'], tipo: 'acqua', hp: 22, atk: 7, mondo: 1, arte: [' ~*~ ', '(o.o)'] },
   licheno: { nome: 'Licheno', evo: ['Tundrone', 'Taigone'], tipo: 'erba', hp: 24, atk: 6, mondo: 1, arte: [' ,., ', '{o_o}'] },
   yetino: { nome: 'Yetino', evo: ['Yetone', 'Yetirex'], tipo: 'normale', hp: 27, atk: 6, mondo: 1, arte: [' MMM ', '(o_O)'] },
-  tuonello: { nome: 'Tuonello', evo: ['Tuonardo', 'Uraganone'], tipo: 'elettro', hp: 22, atk: 9, mondo: 1, arte: [' >>> ', '[@_@]'] },
+  tuonello: { nome: 'Tuonello', evo: ['Tuonardo', 'Uraganone'], tipo: 'elettro', hp: 22, atk: 9, mondo: 1, arte: [' >>> ', '[@_@]'], rarita: 'raro' },
+  cristallino: { nome: 'Cristallino', evo: ['Cristallone', 'Diamantico'], tipo: 'ghiaccio', hp: 25, atk: 10, mondo: 1, arte: [' /\\ ', '<o.o>'], rarita: 'epico' },
+  aurorino: { nome: 'Aurorino', evo: ['Aurorale', 'Boreadrago'], tipo: 'elettro', hp: 28, atk: 11, mondo: 1, arte: [' ~*~*', '(*o*)'], rarita: 'leggendario' },
   sabbiotto: { nome: 'Sabbiotto', evo: ['Sabbione', 'Ghiblone'], tipo: 'terra', hp: 24, atk: 8, mondo: 2, arte: ['  ∴  ', '(°.°)'] },
   dunetto: { nome: 'Dunetto', evo: ['Dunastro', 'Sirocco'], tipo: 'terra', hp: 27, atk: 7, mondo: 2, arte: [' ~-~ ', '(-.-)'] },
   cactello: { nome: 'Cactello', evo: ['Cactone', 'Saguarone'], tipo: 'erba', hp: 25, atk: 8, mondo: 2, arte: [' _|_ ', '|(^_^)|'] },
@@ -37,7 +54,9 @@ export const SPECIE: Record<string, Specie> = {
   cammellino: { nome: 'Cammellino', evo: ['Dromedone', 'Carovaniere'], tipo: 'normale', hp: 30, atk: 7, mondo: 2, arte: [' n n ', '(u.u)'] },
   oasina: { nome: 'Oasina', evo: ['Oasirena', 'Miraggia'], tipo: 'acqua', hp: 24, atk: 8, mondo: 2, arte: [' \\Y/ ', '(o~o)'] },
   pietrolo: { nome: 'Pietrolo', evo: ['Pietrone', 'Monolito'], tipo: 'roccia', hp: 29, atk: 7, mondo: 2, arte: ['  /\\ ', '[o.o]'] },
-  mummietto: { nome: 'Mummietto', evo: ['Faraone', 'Sfingeo'], tipo: 'spettro', hp: 24, atk: 10, mondo: 2, arte: [' #=# ', '(*_*)'] },
+  mummietto: { nome: 'Mummietto', evo: ['Faraone', 'Sfingeo'], tipo: 'spettro', hp: 24, atk: 10, mondo: 2, arte: [' #=# ', '(*_*)'], rarita: 'raro' },
+  scarabello: { nome: 'Scarabello', evo: ['Scarabone', 'Scarabeoro'], tipo: 'terra', hp: 30, atk: 10, mondo: 2, arte: [' (|) ', '[o_o]'], rarita: 'epico' },
+  fenicino: { nome: 'Fenicino', evo: ['Fenicione', 'Fenice'], tipo: 'fuoco', hp: 30, atk: 12, mondo: 2, arte: [' \\^/ ', '<(^v^)>'], rarita: 'leggendario' },
   melmino: { nome: 'Melmino', evo: ['Melmone', 'Melmastro'], tipo: 'veleno', hp: 28, atk: 8, mondo: 3, arte: ['  o  ', '(~_~)'] },
   fanghetto: { nome: 'Fanghetto', evo: ['Fangone', 'Pantanone'], tipo: 'terra', hp: 30, atk: 8, mondo: 3, arte: [' ~.~ ', '(ò_ó)'] },
   rospetto: { nome: 'Rospetto', evo: ['Rospone', 'Rosporex'], tipo: 'acqua', hp: 27, atk: 9, mondo: 3, arte: [' @ @ ', '(___)'] },
@@ -46,7 +65,9 @@ export const SPECIE: Record<string, Specie> = {
   zanzarello: { nome: 'Zanzarello', evo: ['Zanzarone', 'Zanzarex'], tipo: 'normale', hp: 24, atk: 10, mondo: 3, arte: [' \\ / ', '-(o>o)-'] },
   lucciolo: { nome: 'Lucciolo', evo: ['Luccicone', 'Lanternone'], tipo: 'elettro', hp: 25, atk: 10, mondo: 3, arte: [' * * ', '(°o°)'] },
   nebbietta: { nome: 'Nebbietta', evo: ['Foschiona', 'Caligine'], tipo: 'spettro', hp: 26, atk: 9, mondo: 3, arte: [' ~ ~ ', '(-o-)'] },
-  draghetto: { nome: 'Draghetto', evo: ['Paludrago', 'Idragone'], tipo: 'veleno', hp: 30, atk: 11, mondo: 3, arte: [' /\\/\\ ', '<(ò.ó)>'] },
+  draghetto: { nome: 'Draghetto', evo: ['Paludrago', 'Idragone'], tipo: 'veleno', hp: 30, atk: 11, mondo: 3, arte: [' /\\/\\ ', '<(ò.ó)>'], rarita: 'raro' },
+  anguillo: { nome: 'Anguillo', evo: ['Murenone', 'Leviatano'], tipo: 'acqua', hp: 30, atk: 11, mondo: 3, arte: [' ~~~~', '(o_o)~'], rarita: 'epico' },
+  basiliscolo: { nome: 'Basiliscolo', evo: ['Basilisco', 'Basiliscorex'], tipo: 'veleno', hp: 32, atk: 13, mondo: 3, arte: [' /^^\\ ', '<(ò_ó)>'], rarita: 'leggendario' },
   fantasmino: { nome: 'Fantasmino', evo: ['Fantasmone', 'Spettrarca'], tipo: 'spettro', hp: 28, atk: 10, mondo: 4, arte: [' .-. ', '(o o)'] },
   lumicino: { nome: 'Lumicino', evo: ['Fuocofatuo', 'Lumarca'], tipo: 'fuoco', hp: 27, atk: 11, mondo: 4, arte: ['  )  ', '(°w°)'] },
   ossicino: { nome: 'Ossicino', evo: ['Scheletrone', 'Ossidrago'], tipo: 'terra', hp: 31, atk: 9, mondo: 4, arte: [' o=o ', '(x.x)'] },
@@ -55,8 +76,27 @@ export const SPECIE: Record<string, Specie> = {
   ombretta: { nome: 'Ombretta', evo: ['Tenebra', 'Notturna'], tipo: 'spettro', hp: 26, atk: 12, mondo: 4, arte: [' ▒▒▒ ', '(•_•)'] },
   corvetto: { nome: 'Corvetto', evo: ['Corvaccio', 'Corvomante'], tipo: 'normale', hp: 28, atk: 11, mondo: 4, arte: ['  ,  ', '(o>o)'] },
   brividino: { nome: 'Brividino', evo: ['Brividone', 'Assiderato'], tipo: 'ghiaccio', hp: 29, atk: 10, mondo: 4, arte: [' *^* ', '(>.<)'] },
-  eclissino: { nome: 'Eclissino', evo: ['Eclissone', 'Eclissarca'], tipo: 'spettro', hp: 32, atk: 12, mondo: 4, arte: [' C . ', '(*.*)'] },
+  eclissino: { nome: 'Eclissino', evo: ['Eclissone', 'Eclissarca'], tipo: 'spettro', hp: 32, atk: 12, mondo: 4, arte: [' C . ', '(*.*)'], rarita: 'raro' },
+  stillino: { nome: 'Stillino', evo: ['Stillone', 'Stalattone'], tipo: 'acqua', hp: 30, atk: 10, mondo: 4, arte: ['  .  ', '(o.o)'] },
+  golemino: { nome: 'Golemino', evo: ['Golemone', 'Titanico'], tipo: 'roccia', hp: 36, atk: 12, mondo: 4, arte: [' [=] ', '[O_O]'], rarita: 'epico' },
+  chimerino: { nome: 'Chimerino', evo: ['Chimerone', 'Chimera'], tipo: 'fuoco', hp: 34, atk: 14, mondo: 4, arte: [' ^v^ ', '<(°_°)>'], rarita: 'leggendario' },
 }
+
+// Quanto spesso esce ogni rarità, nell'erba alta e quando si pesca (il resto sono comuni).
+// Se il mondo non ha un Mostrino di quella rarità lì (il leggendario della Prateria si pesca soltanto),
+// esce un comune.
+const PROB_RARITA = {
+  erba: { leggendario: 0.015, epico: 0.04, raro: 0.08 },
+  pesca: { leggendario: 0.04, epico: 0.08, raro: 0.1 },
+}
+// I Mostrini più rari sono qualche livello più su, e più difficili da catturare.
+const LIVELLI_RARITA: Record<Rarita, number> = { comune: 0, raro: 1, epico: 2, leggendario: 3 }
+export const CATTURA_RARITA: Record<Rarita, number> = { comune: 1, raro: 0.8, epico: 0.6, leggendario: 0.4 }
+
+export const rarita = (sp: string): Rarita => SPECIE[sp]?.rarita ?? 'comune'
+export const comune = (sp: string) => rarita(sp) === 'comune'
+// Dove si trova: i Mostrini d'acqua si pescano, gli altri vivono nell'erba alta.
+export const doveSiTrova = (sp: string) => `${SPECIE[sp]!.tipo === 'acqua' ? 'Si pesca' : 'Vive'} ${MONDI[SPECIE[sp]!.mondo]!.nel}`
 
 export const INIZIALI = ['braciotto', 'goccetto', 'germoglio']
 
@@ -86,34 +126,84 @@ const COLORE_TIPO: Record<Tipo, string> = {
   spettro: '#9c8cf0',
 }
 
+// Gli elementi sono disposti in cerchio, e ognuno batte quello subito dopo e quello tre posti più avanti:
+// così ogni tipo è forte contro due tipi e debole contro due, e allo stesso modo prende più danni da due
+// tipi e meno da altri due. Nessun tipo vale più degli altri.
+export const ANELLO: Tipo[] = ['acqua', 'fuoco', 'erba', 'roccia', 'ghiaccio', 'terra', 'veleno', 'spettro', 'elettro', 'normale']
+// L'attacco del tipo forte fa il 10% in più, quello del tipo debole il 5% in meno.
+export const VANTAGGIO = 1.1
+export const SVANTAGGIO = 0.95
+
 export function efficacia(att: Tipo, dif: Tipo): number {
-  const forte: Record<string, Tipo[]> = {
-    fuoco: ['erba', 'ghiaccio'],
-    acqua: ['fuoco', 'roccia', 'terra'],
-    erba: ['acqua', 'roccia', 'terra'],
-    elettro: ['acqua'],
-    ghiaccio: ['erba', 'terra'],
-    roccia: ['fuoco', 'ghiaccio', 'elettro'],
-    terra: ['fuoco', 'elettro', 'roccia', 'veleno'],
-    veleno: ['erba'],
-    spettro: ['spettro', 'veleno'],
-  }
-  const debole: Record<string, Tipo[]> = {
-    fuoco: ['acqua', 'fuoco', 'roccia'],
-    acqua: ['erba', 'acqua'],
-    erba: ['fuoco', 'erba', 'veleno'],
-    elettro: ['erba', 'elettro', 'roccia', 'terra'],
-    ghiaccio: ['fuoco', 'ghiaccio', 'roccia'],
-    roccia: ['roccia'],
-    normale: ['spettro'],
-    terra: ['erba', 'terra'],
-    veleno: ['veleno', 'terra', 'roccia', 'spettro'],
-    spettro: ['normale', 'roccia'],
-  }
-  if (forte[att]?.includes(dif)) return 1.5
-  if (debole[att]?.includes(dif)) return 0.6
+  const passi = (ANELLO.indexOf(dif) - ANELLO.indexOf(att) + ANELLO.length) % ANELLO.length
+  if (passi === 1 || passi === 3) return VANTAGGIO
+  if (passi === ANELLO.length - 1 || passi === ANELLO.length - 3) return SVANTAGGIO
 
   return 1
+}
+
+// Contro chi è forte un tipo, e contro chi è debole.
+export const fortiContro = (t: Tipo) => ANELLO.filter(d => efficacia(t, d) > 1)
+export const deboliContro = (t: Tipo) => ANELLO.filter(d => efficacia(t, d) < 1)
+
+// Le bio del catalogo, una per specie.
+export const BIO: Record<string, string> = {
+  braciotto: 'Ha una fiammella sulla testa che si gonfia quando è contento.',
+  fumarello: 'Sbuffa nuvolette di fumo quando sonnecchia al sole.',
+  goccetto: 'Una goccia curiosa che rimbalza da una pozzanghera all\'altra.',
+  ondina: 'Cavalca le piccole onde dei laghetti della Prateria.',
+  germoglio: 'Il germoglio sulla testa cresce un po\' ogni volta che prende il sole.',
+  muschietto: 'Dorme così tanto che gli cresce il muschio addosso.',
+  zampetto: 'Corre nell\'erba alta a zampe leggere e non si fa mai sentire.',
+  piumino: 'Ha una piuma sola, ma ne va fierissimo.',
+  scintillo: 'Raro e scattante: quando si emoziona lascia scintille nell\'aria.',
+  gelino: 'Le sue antenne di ghiaccio tintinnano col vento delle vette.',
+  nevischio: 'Si confonde con la neve fresca e sbadiglia fiocchi.',
+  sassolo: 'Rotola giù dai pendii per divertimento.',
+  macigno: 'Pesante e paziente: può restare fermo per giorni.',
+  lavotto: 'Porta il calore della lava anche in mezzo alla neve.',
+  brinella: 'Lascia una scia di brina dovunque nuoti.',
+  licheno: 'Cresce sulle rocce più fredde e non teme il gelo.',
+  yetino: 'Un batuffolo di pelo bianco che adora le valanghe.',
+  tuonello: 'Raro: il suo grido rimbomba tra le vette come un tuono.',
+  sabbiotto: 'Si nasconde sotto la sabbia lasciando fuori solo gli occhi.',
+  dunetto: 'Si sposta col vento insieme alle dune.',
+  cactello: 'Fiorisce una volta all\'anno, e allora diventa gentilissimo.',
+  pungiglio: 'Agita la coda velenosa per spaventare, ma è un tenerone.',
+  solletto: 'Si ricarica al sole di mezzogiorno e scotta al tatto.',
+  cammellino: 'Fa scorta d\'acqua nelle gobbe per attraversare il deserto.',
+  oasina: 'Dove si ferma spuntano palme e acqua fresca.',
+  pietrolo: 'Le sue punte di roccia indicano sempre la strada per l\'oasi.',
+  mummietto: 'Raro: si dice che custodisca i segreti delle piramidi.',
+  melmino: 'È fatto di melma lilla e gocciola dappertutto.',
+  fanghetto: 'Adora i bagni di fango e ne esce sempre più forte.',
+  rospetto: 'Gracida di notte e salta da una ninfea all\'altra.',
+  tossilla: 'Il suo cappello a pois è bello da vedere, ma meglio non toccarlo.',
+  ninfeo: 'Galleggia sulle acque ferme con un fiore rosa in testa.',
+  zanzarello: 'Ronza intorno a chi attraversa la palude.',
+  lucciolo: 'Di notte illumina la palude con la pancia luminosa.',
+  nebbietta: 'Appare e scompare nella nebbia del mattino.',
+  draghetto: 'Raro: un piccolo drago che sputa bolle velenose.',
+  fantasmino: 'Si diverte a fare "bu!" a chi passa, poi scappa.',
+  lumicino: 'Una fiammella blu che danza tra le rovine.',
+  ossicino: 'Rosicchia ossa antiche e ne porta una in testa.',
+  pipistrillo: 'Dorme a testa in giù sotto gli archi delle rovine.',
+  gargolino: 'Di giorno sembra una statua, di notte fa la guardia.',
+  ombretta: 'Vive nelle ombre e ha occhi rosa che brillano al buio.',
+  corvetto: 'Colleziona gli oggetti luccicanti che trova tra le rovine.',
+  brividino: 'Fa venire i brividi a chiunque gli passi vicino.',
+  eclissino: 'Raro: compare solo quando la luna si nasconde.',
+  trifoglio: 'Epico: chi trova le sue quattro foglie ha fortuna per un anno intero.',
+  carpadoro: 'Leggendario: un pesce d\'oro che abbocca solo ai pescatori più pazienti.',
+  cristallino: 'Epico: il suo corpo di cristallo spezza la luce in mille arcobaleni.',
+  aurorino: 'Leggendario: danza nel cielo delle notti polari e accende l\'aurora.',
+  scarabello: 'Epico: rotola palline di sabbia d\'oro e le nasconde nelle piramidi.',
+  fenicino: 'Leggendario: quando si stanca rinasce dalle sue stesse ceneri.',
+  anguillo: 'Epico: lungo e scivoloso, sparisce nell\'acqua torbida al primo rumore.',
+  basiliscolo: 'Leggendario: il re dei serpenti della palude, con una corona di squame.',
+  stillino: 'Una goccia che cola dagli archi delle rovine e si raccoglie nei pozzi.',
+  golemino: 'Epico: un guardiano di pietra antica che si sveglia ogni cent\'anni.',
+  chimerino: 'Leggendario: testa di leone, ali di drago e fiato di fuoco.',
 }
 
 // Ogni casella occupa due caratteri a schermo.
@@ -127,7 +217,6 @@ export type Mondo = {
   nel: string
   del: string
   mappa: string[]
-  raro: string
   lvlMin: number
   lvlMax: number
   forti: Tipo[]
@@ -140,7 +229,6 @@ export const MONDI: Mondo[] = [
     nome: 'Prateria',
     nel: 'nella Prateria',
     del: 'della Prateria',
-    raro: 'scintillo',
     lvlMin: 2,
     lvlMax: 7,
     forti: ['erba', 'normale'],
@@ -163,7 +251,6 @@ export const MONDI: Mondo[] = [
     nome: 'Vette Gelate',
     nel: 'sulle Vette Gelate',
     del: 'delle Vette Gelate',
-    raro: 'tuonello',
     lvlMin: 8,
     lvlMax: 14,
     forti: ['ghiaccio', 'roccia'],
@@ -186,7 +273,6 @@ export const MONDI: Mondo[] = [
     nome: 'Deserto Rovente',
     nel: 'nel Deserto Rovente',
     del: 'del Deserto Rovente',
-    raro: 'mummietto',
     lvlMin: 15,
     lvlMax: 21,
     forti: ['fuoco', 'terra'],
@@ -209,7 +295,6 @@ export const MONDI: Mondo[] = [
     nome: 'Palude Nebbiosa',
     nel: 'nella Palude Nebbiosa',
     del: 'della Palude Nebbiosa',
-    raro: 'draghetto',
     lvlMin: 22,
     lvlMax: 28,
     forti: ['veleno', 'acqua'],
@@ -232,7 +317,6 @@ export const MONDI: Mondo[] = [
     nome: 'Rovine Spettrali',
     nel: 'tra le Rovine Spettrali',
     del: 'delle Rovine Spettrali',
-    raro: 'eclissino',
     lvlMin: 29,
     lvlMax: 36,
     forti: ['spettro', 'roccia'],
@@ -256,7 +340,7 @@ export const MAPPA = MONDI[0]!.mappa
 export const CENTRO = { x: 2, y: 2 }
 
 // La versione mostrata nel menu: la stessa di version in .claude-plugin/plugin.json.
-export const VERSIONE = '0.8.1'
+export const VERSIONE = '0.9.1'
 
 // Le sfere e le cure: ogni mondo ne aggiunge una al negozio, più forte di quelle prima.
 // cattura: quanto moltiplica la probabilità di catturare; ps: i PS che ridà (Infinity: tutti).
@@ -294,15 +378,24 @@ export const stadioPer = (lvl: number) => LIVELLI_EVO.filter(l => lvl >= l).leng
 
 export const maxHp = (m: Mostrino) => Math.round((SPECIE[m.sp]!.hp + m.lvl * 3) * EVO_BONUS[stadio(m)]!)
 const atk = (m: Mostrino) => Math.round((SPECIE[m.sp]!.atk + m.lvl * 2) * EVO_BONUS[stadio(m)]!)
-export const nome = (m: Mostrino) => (stadio(m) > 0 ? SPECIE[m.sp]!.evo[stadio(m) - 1]! : SPECIE[m.sp]!.nome)
+// Ogni specie ha tre forme, e nel catalogo ognuna ha la sua voce: la chiave è la specie per la forma
+// base, "specie:1" per l'evoluta e "specie:2" per la finale.
+export const FORME = 3
+export const forma = (sp: string, st: number) => (st > 0 ? `${sp}:${st}` : sp)
+export const formaDi = (m: Mostrino) => forma(m.sp, stadio(m))
+export const nomeForma = (sp: string, st: number) => (st > 0 ? SPECIE[sp]!.evo[st - 1]! : SPECIE[sp]!.nome)
+export const nome = (m: Mostrino) => nomeForma(m.sp, stadio(m))
 
 export const specieDel = (mondo: number) => Object.keys(SPECIE).filter(k => SPECIE[k].mondo === mondo)
 
-// Il catalogo di un mondo conta le specie di quel mondo e dei mondi prima: 9 nella Prateria, 18 nelle Vette e così via.
-export function catalogoDel(s: Stato): { presi: number; tot: number } {
-  const specie = Object.keys(SPECIE).filter(k => SPECIE[k].mondo <= s.mondo)
+// Le chiavi di tutte le forme delle specie date, in ordine di catalogo.
+const formeDi = (specie: string[]) => specie.flatMap(sp => Array.from({ length: FORME }, (_, st) => forma(sp, st)))
 
-  return { presi: specie.filter(k => s.catalogo.includes(k)).length, tot: specie.length }
+// Il catalogo di un mondo conta le forme catturate di quel mondo e dei mondi prima: 27 nella Prateria, 54 nelle Vette e così via.
+export function catalogoDel(s: Stato): { presi: number; tot: number } {
+  const forme = formeDi(Object.keys(SPECIE).filter(k => SPECIE[k]!.mondo <= s.mondo))
+
+  return { presi: forme.filter(k => s.catalogo.includes(k)).length, tot: forme.length }
 }
 
 // La palestra del mondo n (contando da 1) ha n+2 allievi e poi il capopalestra.
@@ -310,11 +403,14 @@ export const allievi = (mondo: number) => mondo + 3
 export const vinteIn = (s: Stato, mondo: number) => s.palestre?.[mondo] ?? 0
 export const medaglia = (s: Stato, mondo: number) => vinteIn(s, mondo) > allievi(mondo)
 
-// Quanti Mostrini di quel mondo mancano ancora nel catalogo.
-export const mancantiIn = (s: Stato, mondo: number) => specieDel(mondo).filter(sp => !s.catalogo.includes(sp)).length
+// La specie di una forma del catalogo: "specie:1" è l'evoluzione di "specie".
+const specieDi = (chiave: string) => chiave.split(':')[0]!
 
-// Il portale P di un mondo si apre con la medaglia della sua palestra e col catalogo del mondo completo;
-// l'ultimo mondo non ne ha.
+// Quanti Mostrini di quel mondo non hai ancora sconfitto né catturato (in una qualunque delle loro forme).
+export const mancantiIn = (s: Stato, mondo: number) => specieDel(mondo).filter(sp => !(s.sconfitti ?? []).includes(sp)).length
+
+// Il portale P di un mondo si apre con la medaglia della sua palestra e con tutti i Mostrini del mondo
+// sconfitti o catturati; l'ultimo mondo non ne ha.
 export function portaleAperto(s: Stato, mondo = s.mondo): boolean {
   return mondo + 1 < MONDI.length && medaglia(s, mondo) && mancantiIn(s, mondo) === 0
 }
@@ -324,23 +420,9 @@ export function perIlPortale(s: Stato): string {
   const servono: string[] = []
   if (!medaglia(s, s.mondo)) servono.push(`la ${MONDI[s.mondo]!.palestra.medaglia} (palestra G)`)
   const mancano = mancantiIn(s, s.mondo)
-  if (mancano > 0) servono.push(`${mancano} Mostrini nel catalogo di questo mondo`)
+  if (mancano > 0) servono.push(`${mancano} Mostrini di questo mondo da sconfiggere o catturare`)
 
   return `Il portale è chiuso: ti mancano ${servono.join(' e ')}.`
-}
-
-// La forma più evoluta che hai avuto di ogni specie, per il catalogo.
-function ricordaStadi(s: Stato, ...altri: Mostrino[]): Stato {
-  const stadi = { ...(s.stadi ?? {}) }
-  let cambiato = false
-  for (const m of [...s.squadra, ...s.box, ...altri]) {
-    if ((stadi[m.sp] ?? -1) < stadio(m)) {
-      stadi[m.sp] = stadio(m)
-      cambiato = true
-    }
-  }
-
-  return cambiato || !s.stadi ? { ...s, stadi } : s
 }
 
 // +5% o -5% a seconda del tipo della mossa e del bioma del mondo.
@@ -379,10 +461,8 @@ export function statoIniziale(): Stato {
     squadra: [],
     box: [],
     catalogo: [],
-    catturati: [],
+    sconfitti: [],
     visti: [],
-    stadi: {},
-    versioneCatalogo: 2,
     sfere: [5, 0, 0, 0, 0],
     cure: [2, 0, 0, 0, 0],
     palestre: MONDI.map(() => 0),
@@ -403,6 +483,7 @@ export function statoMenu(): Stato {
 // Prima delle palestre e degli zaini a caselle: sfere e cure diventano caselle (con mega sfere e super cure
 // nella seconda), il catalogo tiene solo le specie che hai ancora in squadra o nel box (le altre restano
 // viste), e le palestre dei mondi già lasciati alle spalle contano come vinte.
+// Le forme dei Mostrini che hai in squadra e nel box entrano sempre nel catalogo come catturate.
 export function normalizza(salvato: Partial<Stato>): Stato {
   const s: Stato = { ...statoIniziale(), ...salvato }
   const conStadio = (m: Mostrino): Mostrino => (m.evo === true ? { ...m, evo: 1 } : m)
@@ -412,7 +493,7 @@ export function normalizza(salvato: Partial<Stato>): Stato {
   const caselle = (v: unknown, seconda: number | undefined, prima: number) =>
     Array.isArray(v) ? MONDI.map((_, i) => Number(v[i] ?? 0)) : [Number(v ?? prima), seconda ?? 0, 0, 0, 0]
   const vecchia = salvato.visti === undefined
-  const posseduti = [...new Set([...squadra, ...box].map(m => m.sp))]
+  const catalogo = [...new Set([...(vecchia ? [] : s.catalogo), ...[...squadra, ...box].map(formaDi)])]
 
   return {
     ...s,
@@ -427,25 +508,18 @@ export function normalizza(salvato: Partial<Stato>): Stato {
     cancella: false,
     daCancellare: null,
     catalogoVista: null,
+    evoluzioni: [],
+    feste: [],
+    pesca: null,
+    colpi: undefined,
     sfere: caselle(salvato.sfere, salvato.megaSfere, 5),
     cure: caselle(salvato.cure, salvato.cureForti, 2),
     megaSfere: undefined,
     cureForti: undefined,
-    // Dalla 0.8.1 il catalogo conta anche chi hai sconfitto: le partite precedenti recuperano
-    // nel catalogo i Mostrini rimasti tra i visti, e i catturati tengono la sfera.
-    catalogo: (salvato.versioneCatalogo ?? 0) >= 2 ? s.catalogo : [...new Set([...s.catalogo, ...(s.visti ?? []), ...posseduti])],
-    catturati:
-      (salvato.versioneCatalogo ?? 0) >= 2
-        ? (salvato.catturati ?? [])
-        : [...new Set([...(vecchia ? [] : s.catalogo), ...posseduti])],
-    versioneCatalogo: 2,
-    stadi: (() => {
-      const st: Record<string, number> = { ...(salvato.stadi ?? {}) }
-      for (const m of [...squadra, ...box]) st[m.sp] = Math.max(st[m.sp] ?? 0, stadio(m))
-
-      return st
-    })(),
-    visti: vecchia ? [...new Set([...s.catalogo, ...posseduti])] : (s.visti ?? []),
+    catalogo,
+    visti: [...new Set([...(vecchia ? s.catalogo : (s.visti ?? [])), ...catalogo])],
+    sconfitti: [...new Set([...(salvato.sconfitti ?? [...(s.visti ?? []), ...s.catalogo].map(specieDi)), ...catalogo.map(specieDi)])],
+    inPalestra: null,
     palestre: MONDI.map((_, i) => (salvato.palestre ? (salvato.palestre[i] ?? 0) : i < mondo ? allievi(i) + 1 : 0)),
     squadra,
     box,
@@ -462,25 +536,41 @@ function curaTutti(s: Stato): Stato {
   return { ...s, squadra: s.squadra.map(m => ({ ...m, hp: maxHp(m) })) }
 }
 
-// Una specie incontrata in lotta diventa vista: nel catalogo si vede a colori, ma senza la sfera.
-function vedi(s: Stato, sp: string): Stato {
-  return s.visti?.includes(sp) ? s : { ...s, visti: [...(s.visti ?? []), sp] }
+// Una forma incontrata in lotta diventa vista: nel catalogo si vede a colori, ma senza la sfera.
+function vedi(s: Stato, chiave: string): Stato {
+  return s.visti?.includes(chiave) ? s : { ...s, visti: [...(s.visti ?? []), chiave] }
 }
 
-// Sconfiggere o catturare mette una specie nel catalogo; catturarla le dà anche la sfera accanto al nome.
-// Quando il catalogo del mondo si completa e hai già la medaglia, si apre il portale.
-function registra(s: Stato, sp: string, catturato = false): { s: Stato; righe: string[] } {
-  let n = vedi(s, sp)
-  if (catturato && !(n.catturati ?? []).includes(sp)) n = { ...n, catturati: [...(n.catturati ?? []), sp] }
-  if (s.catalogo.includes(sp)) return { s: n, righe: [] }
-  n = { ...n, catalogo: [...s.catalogo, sp] }
-  const righe = [`Nuovo nel catalogo: ${SPECIE[sp].nome}!`]
+// I Mostrini che possiedi, anche appena evoluti: le loro forme sono catturate.
+function possiedi(s: Stato, mostrini: Mostrino[]): Stato {
+  const nuove = mostrini.map(formaDi).filter(k => !s.catalogo.includes(k))
+  if (nuove.length === 0) return s
+  const catalogo = [...new Set([...s.catalogo, ...nuove])]
+
+  return { ...s, catalogo, visti: [...new Set([...(s.visti ?? []), ...nuove])] }
+}
+
+// Solo catturare mette una forma nel catalogo, con la sfera accanto al nome.
+function registra(s: Stato, m: Mostrino): { s: Stato; righe: string[] } {
+  const chiave = formaDi(m)
+  const visto = vedi(s, chiave)
+  if (s.catalogo.includes(chiave)) return { s: visto, righe: [] }
+  const n = { ...visto, catalogo: [...s.catalogo, chiave] }
+  const righe = [`Nuovo nel catalogo: ${nome(m)}!`]
+  if (n.catalogo.length === Object.keys(SPECIE).length * FORME) righe.push('Hai catturato tutti i Mostrini. Il catalogo è completo!')
+
+  return { s: n, righe }
+}
+
+// Sconfiggere o catturare un Mostrino segna la sua specie per il portale; quando il mondo è al completo
+// e hai già la medaglia, il portale si apre.
+function sconfiggi(s: Stato, sp: string): { s: Stato; righe: string[] } {
+  if ((s.sconfitti ?? []).includes(sp)) return { s, righe: [] }
+  const n = { ...s, sconfitti: [...(s.sconfitti ?? []), sp] }
   const mondo = SPECIE[sp]!.mondo
-  if (mancantiIn(n, mondo) === 0) {
-    righe.push(`Catalogo ${MONDI[mondo]!.nel} completo!`)
-    if (!portaleAperto(s) && portaleAperto(n)) righe.push(`Il portale (P) verso ${MONDI[s.mondo + 1]!.nome} è aperto.`)
-  }
-  if (n.catalogo.length === Object.keys(SPECIE).length) righe.push('Hai trovato tutti i Mostrini. Il catalogo è completo!')
+  if (mancantiIn(n, mondo) > 0) return { s: n, righe: [] }
+  const righe = [`Hai sconfitto o catturato tutti i Mostrini ${MONDI[mondo]!.nel}!`]
+  if (!portaleAperto(s) && portaleAperto(n)) righe.push(`Il portale (P) verso ${MONDI[s.mondo + 1]!.nome} è aperto.`)
 
   return { s: n, righe }
 }
@@ -496,28 +586,68 @@ export function scegliIniziale(s: Stato, i: number): Stato {
     modo: 'mappa',
     squadra: [nuovo(sp, 5)],
     catalogo: [sp],
-    catturati: [sp],
+    sconfitti: [sp],
     visti: [sp],
-    stadi: { [sp]: 0 },
     log: [`Hai scelto ${SPECIE[sp].nome}! Cammina nell'erba alta per trovare Mostrini.`],
   }
 }
 
-function incontro(s: Stato, rnd: () => number): Stato {
-  const mondo = MONDI[s.mondo]!
-  const pool = specieDel(s.mondo).filter(k => k !== mondo.raro)
-  const sp = rnd() < 0.08 ? mondo.raro : pool[Math.floor(rnd() * pool.length)]
-  const lvl = livelloNel(s.mondo, rnd)
+// Prima si tira la rarità, poi la specie tra quelle di quella rarità.
+function scegliSpecie(pool: string[], prob: Record<'leggendario' | 'epico' | 'raro', number>, rnd: () => number): string {
+  const r = rnd()
+  let soglia = 0
+  for (const t of ['leggendario', 'epico', 'raro'] as const) {
+    soglia += prob[t]
+    if (r >= soglia) continue
+    const tra = pool.filter(sp => rarita(sp) === t)
+    if (tra.length > 0) return tra[Math.floor(rnd() * tra.length)]!
+    break
+  }
+  const comuni = pool.filter(comune)
+
+  return comuni[Math.floor(rnd() * comuni.length)]!
+}
+
+// Nell'erba alta tutti i Mostrini del mondo tranne quelli d'acqua; pescando solo quelli d'acqua.
+export const nellErba = (mondo: number) => specieDel(mondo).filter(sp => SPECIE[sp]!.tipo !== 'acqua')
+export const nellAcqua = (mondo: number) => specieDel(mondo).filter(sp => SPECIE[sp]!.tipo === 'acqua')
+
+function incontro(s: Stato, rnd: () => number, pescato = false): Stato {
+  const sp = scegliSpecie(pescato ? nellAcqua(s.mondo) : nellErba(s.mondo), PROB_RARITA[pescato ? 'pesca' : 'erba'], rnd)
+  const lvl = Math.min(MONDI[s.mondo]!.lvlMax + 3, livelloNel(s.mondo, rnd) + LIVELLI_RARITA[rarita(sp)])
   // Dal livello 15 circa un selvatico su tre è già evoluto; dal 35 uno su tre è nella forma finale
   // e uno su quattro nella prima evoluzione.
   const max = stadioPer(lvl)
   const r = max > 0 ? rnd() : 1
   const nemico = nuovo(sp, lvl, r < 0.35 ? max : r < 0.6 ? max - 1 : 0)
+  const quale = comune(sp) ? '' : ` ${rarita(sp)}`
 
   return conLog(
-    vedi({ ...s, modo: 'lotta', nemico, scelta: 0, lancio: false, zaino: null, cambio: false, allenatore: null }, nemico.sp),
-    `Un ${nome(nemico)} selvatico (Lv ${lvl}) ti sbarra la strada!`,
+    vedi({ ...s, modo: 'lotta', nemico, scelta: 0, lancio: false, zaino: null, cambio: false, allenatore: null, pesca: null }, formaDi(nemico)),
+    pescato
+      ? `Abbocca qualcosa! Hai pescato un ${nome(nemico)} selvatico${quale} (Lv ${lvl})!`
+      : `Un ${nome(nemico)} selvatico${quale} (Lv ${lvl}) ti sbarra la strada!`,
   )
+}
+
+// La casella d'acqua accanto a te (sopra, sotto, a destra o a sinistra), se c'è.
+export function acquaVicina(s: Stato): { x: number; y: number } | null {
+  if (s.inPalestra) return null
+  for (const [dx, dy] of [[0, -1], [1, 0], [0, 1], [-1, 0]] as const) {
+    if (casellaDi(s, s.x + dx, s.y + dy) === '~') return { x: s.x + dx, y: s.y + dy }
+  }
+
+  return null
+}
+
+// F sulla riva: lanci la lenza nell'acqua accanto. Metà delle volte abbocca un Mostrino d'acqua
+// (si trovano solo così); se no il galleggiante resta in acqua finché non ti muovi.
+export function pesca(s: Stato, rnd: () => number = Math.random): Stato {
+  const acqua = acquaVicina(s)
+  if (!acqua) return conLog(s, 'Per pescare mettiti sulla riva, accanto all\'acqua.')
+  if (rnd() < 0.5) return incontro(s, rnd, true)
+
+  return conLog({ ...s, pesca: acqua }, 'Il galleggiante dondola... non abbocca niente. Riprova con F.')
 }
 
 // L'inizio di una lotta contro un allenatore: il primo Mostrino della sua squadra scende in campo.
@@ -525,7 +655,7 @@ function controAllenatore(s: Stato, nomeAll: string, squadra: Mostrino[], palest
   const [primo, ...resto] = squadra
   const allenatore = palestra ? { nome: nomeAll, squadra: resto, palestra } : { nome: nomeAll, squadra: resto }
 
-  return vedi({ ...s, modo: 'lotta', nemico: primo!, scelta: 0, lancio: false, zaino: null, cambio: false, allenatore }, primo!.sp)
+  return vedi({ ...s, modo: 'lotta', nemico: primo!, scelta: 0, lancio: false, zaino: null, cambio: false, allenatore }, formaDi(primo!))
 }
 
 // Gli allenatori che si incontrano per strada e sfidano con la loro squadra.
@@ -535,8 +665,7 @@ const ALLENATORI = [
 ]
 
 export function sfida(s: Stato, rnd: () => number = Math.random): Stato {
-  const mondo = MONDI[s.mondo]!
-  const pool = specieDel(s.mondo).filter(k => k !== mondo.raro)
+  const pool = specieDel(s.mondo).filter(comune)
   const quanti = s.mondo === 0 ? 2 : 3
   // Gli allenatori fanno evolvere i loro Mostrini appena possono.
   const squadra = Array.from({ length: quanti }, () => {
@@ -557,16 +686,19 @@ export function sfida(s: Stato, rnd: () => number = Math.random): Stato {
 const ALLIEVI = ['Allievo Dario', 'Allieva Sole', 'Allievo Nino', 'Allieva Lara', 'Allievo Pietro', 'Allieva Viola', 'Allievo Enea']
 
 // La squadra del capopalestra: Mostrini del suo tipo un livello sopra la fascia del mondo,
-// e per ultimo il Mostrino raro del mondo, ancora più forte. Ogni due mondi ne ha uno in più.
+// e per ultimo il Mostrino raro del mondo (mai l'epico o il leggendario), ancora più forte. Ogni due mondi ne ha uno in più.
 export function squadraCapo(mondo: number): Mostrino[] {
   const m = MONDI[mondo]!
-  const comuni = specieDel(mondo).filter(sp => sp !== m.raro)
+  const comuni = specieDel(mondo).filter(comune)
   const ordinati = [...comuni.filter(sp => SPECIE[sp]!.tipo === m.palestra.tipo), ...comuni.filter(sp => SPECIE[sp]!.tipo !== m.palestra.tipo)]
   const quanti = 3 + Math.floor(mondo / 2)
   const lvl = m.lvlMax + 1
 
-  return [...ordinati.slice(0, quanti - 1).map(sp => nuovo(sp, lvl, stadioPer(lvl))), nuovo(m.raro, lvl + 2, stadioPer(lvl + 2))]
+  return [...ordinati.slice(0, quanti - 1).map(sp => nuovo(sp, lvl, stadioPer(lvl))), nuovo(raroDel(mondo), lvl + 2, stadioPer(lvl + 2))]
 }
+
+// Il Mostrino di una rarità di un mondo (ce n'è uno solo per rarità).
+export const raroDel = (mondo: number, r: Exclude<Rarita, 'comune'> = 'raro') => specieDel(mondo).find(sp => rarita(sp) === r)!
 
 // Entrare in palestra (G) fa partire la sfida successiva: prima gli allievi, uno alla volta, poi il capopalestra.
 // Le vittorie restano anche se perdi: torni al Centro cure e riprendi dalla sfida dove eri.
@@ -583,7 +715,7 @@ export function sfidaPalestra(s: Stato, rnd: () => number = Math.random): Stato 
       `${m.palestra.capo} ti aspetta con ${squadra.length} Mostrini! Manda in campo ${nome(squadra[0]!)} (Lv ${squadra[0]!.lvl}).`,
     )
   }
-  const comuni = specieDel(s.mondo).filter(sp => sp !== m.raro)
+  const comuni = specieDel(s.mondo).filter(comune)
   const delTipo = comuni.filter(sp => SPECIE[sp]!.tipo === m.palestra.tipo)
   const squadra = Array.from({ length: s.mondo === 0 ? 2 : 3 }, () => {
     const lista = delTipo.length > 0 && rnd() < 0.5 ? delTipo : comuni
@@ -597,6 +729,73 @@ export function sfidaPalestra(s: Stato, rnd: () => number = Math.random): Stato 
     controAllenatore(s, nomeAll, squadra, 'allievo'),
     `Palestra ${m.del}, sfida ${vinte + 1} di ${tot}: ${nomeAll} manda in campo ${nome(squadra[0]!)} (Lv ${squadra[0]!.lvl}).`,
   )
+}
+
+// ---------- La palestra dentro ----------
+
+// Un salone lungo col tappeto: si entra dalla porta a sinistra, gli allievi aspettano in fila sul tappeto
+// e il capopalestra è in fondo. Ci si muove solo sul tappeto; fermarsi davanti al prossimo allievo
+// (o al capopalestra) fa partire la sfida, e chi è battuto si sposta di lato e lascia passare.
+export const SALONE_ALTO = 7
+export const TAPPETO = 3
+export const saloneLargo = (mondo: number) => 2 * allievi(mondo) + 5
+// La colonna del k-esimo sfidante: k = allievi(mondo) è il capopalestra.
+export const postoSfidante = (k: number) => 3 + 2 * k
+
+// # muro, < porta, = tappeto, o colonna, . pavimento, a allievo da battere, b allievo battuto (di lato),
+// K capopalestra. Il giocatore lo aggiunge chi disegna.
+export function casellaSalone(s: Stato, x: number, y: number): string {
+  const tot = allievi(s.mondo)
+  const vinte = vinteIn(s, s.mondo)
+  if (y === 0 || y === SALONE_ALTO - 1 || x === saloneLargo(s.mondo) - 1) return '#'
+  if (x === 0) return y === TAPPETO ? '<' : '#'
+  for (let k = 0; k <= tot; k++) {
+    if (x !== postoSfidante(k)) continue
+    if (k === tot && y === TAPPETO) return 'K'
+    if (k < tot && k >= vinte && y === TAPPETO) return 'a'
+    if (k < tot && k < vinte && y === TAPPETO + (k % 2 ? 1 : -1)) return 'b'
+  }
+  if (y === TAPPETO) return '='
+  if ((y === 1 || y === SALONE_ALTO - 2) && x % 2 === 0) return 'o'
+
+  return '.'
+}
+
+// Entrare nella G: si resta davanti alla palestra sulla mappa e si comincia dalla porta del salone.
+export function entraPalestra(s: Stato): Stato {
+  const m = MONDI[s.mondo]!
+  const vinte = vinteIn(s, s.mondo)
+  const tot = allievi(s.mondo)
+
+  return conLog(
+    { ...s, inPalestra: { x: 1, y: TAPPETO }, negozio: false, zaino: null },
+    `Entri nella palestra ${m.del}.`,
+    vinte > tot
+      ? `Hai già la ${m.palestra.medaglia}.`
+      : vinte < tot
+        ? `Fermati davanti agli allievi per sfidarli: ne restano ${tot - vinte}, poi ${m.palestra.capo}.`
+        : `${m.palestra.capo} ti aspetta in fondo al salone.`,
+  )
+}
+
+export function muoviInPalestra(s: Stato, dx: number, dy: number, rnd: () => number = Math.random): Stato {
+  const p = s.inPalestra!
+  if (dy !== 0) return s
+  const x = p.x + dx
+  if (x <= 0) return conLog({ ...s, inPalestra: null }, 'Esci dalla palestra.')
+  const tot = allievi(s.mondo)
+  const prossimo = Math.min(vinteIn(s, s.mondo), tot)
+  // Gli allievi ancora da battere e il capopalestra stanno sul tappeto e non fanno passare.
+  for (let k = prossimo; k <= tot; k++) if (x === postoSfidante(k)) return s
+  const n = { ...s, inPalestra: { x, y: TAPPETO } }
+  if (x !== postoSfidante(prossimo) - 1) return n
+  if (medaglia(s, s.mondo)) {
+    const m = MONDI[s.mondo]!
+
+    return conLog(n, `${m.palestra.capo}: hai già la ${m.palestra.medaglia}. Torna quando vuoi!`)
+  }
+
+  return sfidaPalestra(n, rnd)
 }
 
 export function casellaDi(s: Stato, x: number, y: number): string | undefined {
@@ -615,7 +814,7 @@ export function muovi(s: Stato, dx: number, dy: number, rnd: () => number = Math
   if (t === undefined || t === '#' || t === '~') return s
   const n: Stato = { ...s, x: nx, y: ny }
   if (t === 'C') return conLog(curaTutti(n), 'Centro cure: squadra in forma. Premi M per il negozio.')
-  if (t === 'G') return sfidaPalestra(n, rnd)
+  if (t === 'G') return entraPalestra(s)
   if (t === 'P' || t === 'R') {
     const mondo = s.mondo + (t === 'P' ? 1 : -1)
     if (!MONDI[mondo]) return s
@@ -641,8 +840,8 @@ function danno(a: Mostrino, d: Mostrino, potenza: number, tipo: Tipo, mondo: num
 }
 
 function nota(eff: number) {
-  if (eff > 1) return ' È superefficace!'
-  if (eff < 1) return ' Non è molto efficace.'
+  if (eff > 1) return ' Tipo avvantaggiato: +10%!'
+  if (eff < 1) return ' Tipo svantaggiato: -5%.'
 
   return ''
 }
@@ -655,11 +854,14 @@ function turnoNemico(s: Stato, rnd: () => number): Stato {
   const { val, eff } = danno(nem, io, tipoMossa === 'normale' ? 5 : 7, tipoMossa, s.mondo, rnd)
   const hp = Math.max(0, io.hp - val)
   const squadra = [{ ...io, hp }, ...s.squadra.slice(1)]
-  let n = conLog({ ...s, squadra }, `${nome(nem)} usa ${nomeMossa}: -${val} PS.${nota(eff)}`)
+  const colpi = [...(s.colpi ?? []), { chi: 'nemico' as const, mossa: nomeMossa === 'Botta' ? ('botta' as const) : tipoMossa }]
+  let n = conLog({ ...s, squadra, colpi }, `${nome(nem)} usa ${nomeMossa}: -${val} PS.${nota(eff)}`)
   if (hp > 0) return n
+  // chi entra al posto dell'esausto non deve sembrare colpito
+  n = { ...n, colpi: undefined }
   const vivo = n.squadra.findIndex(m => m.hp > 0)
   if (vivo === -1) {
-    n = curaTutti({ ...n, modo: 'mappa', nemico: null, lancio: false, zaino: null, allenatore: null, x: CENTRO.x + 1, y: CENTRO.y })
+    n = curaTutti({ ...n, modo: 'mappa', nemico: null, lancio: false, zaino: null, allenatore: null, inPalestra: null, x: CENTRO.x + 1, y: CENTRO.y })
 
     return conLog(n, `${nome(io)} è esausto. Corri al Centro cure!`)
   }
@@ -709,13 +911,21 @@ function vittoria(s: Stato, rnd: () => number): Stato {
   )
   const monete = s.monete + vinte
   const all = s.allenatore
-  // Lo sconfitto entra nel catalogo; ricordaStadi tiene le evoluzioni raggiunte dalla tua squadra.
-  const reg = registra(ricordaStadi({ ...s, squadra }), nem.sp)
-  const visto = reg.s
-  righe.push(...reg.righe)
+  // la forma sconfitta diventa vista e la sua specie è sconfitta; quelle dei tuoi Mostrini appena evoluti
+  // sono catturate; le evoluzioni si mostrano poi una alla volta con l'animazione
+  const nuoveEvo = squadra
+    .map((m, i) => ({ sp: m.sp, da: stadio(s.squadra[i]!), a: stadio(m) }))
+    .filter(e => e.a > e.da)
+  const sconfitto = sconfiggi(vedi(s, formaDi(nem)), nem.sp)
+  righe.push(...sconfitto.righe)
+  const visto = {
+    ...possiedi(sconfitto.s, squadra),
+    ...(nuoveEvo.length > 0 ? { evoluzioni: [...(s.evoluzioni ?? []), ...nuoveEvo] } : {}),
+  }
   if (all && all.squadra.length > 0) {
     const [prossimo, ...resto] = all.squadra
-    const n = vedi({ ...visto, nemico: prossimo!, lancio: false, squadra, monete, allenatore: { ...all, squadra: resto } }, prossimo!.sp)
+    // il prossimo Mostrino dell'allenatore entra fresco: niente colpo da animare su di lui
+    const n = vedi({ ...visto, nemico: prossimo!, lancio: false, squadra, monete, allenatore: { ...all, squadra: resto }, colpi: undefined }, formaDi(prossimo!))
 
     return conLog(n, ...righe, ...evoluzioni, `${all.nome} manda in campo ${nome(prossimo!)} (Lv ${prossimo!.lvl}).`)
   }
@@ -735,12 +945,12 @@ function vittoria(s: Stato, rnd: () => number): Stato {
             ? 'Sei il campione di Mostrini!'
             : mancano === 0
               ? `Il portale (P) verso ${dopo.nome} è aperto.`
-              : `Per aprire il portale (P) ti mancano ancora ${mancano} Mostrini nel catalogo di questo mondo.`
+              : `Per aprire il portale (P) ti mancano ancora ${mancano} Mostrini di questo mondo da sconfiggere o catturare.`
         }`,
       )
     } else if (all.palestra) {
       const fatte = palestre[s.mondo]!
-      righe.push(fatte === allievi(s.mondo) ? `Allievi battuti: ora ti aspetta ${m.palestra.capo} (G).` : `Palestra: ${fatte}/${allievi(s.mondo)} allievi battuti.`)
+      righe.push(fatte === allievi(s.mondo) ? `Allievi battuti: ${m.palestra.capo} ti aspetta in fondo al salone.` : `Palestra: ${fatte}/${allievi(s.mondo)} allievi battuti.`)
     }
 
     return conLog(n, ...righe, ...evoluzioni)
@@ -770,7 +980,7 @@ export function cambiaInLotta(s: Stato, i: number, rnd: () => number = Math.rand
 export function probCattura(s: Stato, nem: Mostrino, sfera: number): number {
   const base = 0.25 + 0.6 * (1 - nem.hp / maxHp(nem))
 
-  return Math.min(0.95, base * (CATTURA_MONDO[s.mondo] ?? 1) * (SFERE[sfera]?.cattura ?? 1))
+  return Math.min(0.95, base * (CATTURA_MONDO[s.mondo] ?? 1) * CATTURA_RARITA[rarita(nem.sp)] * (SFERE[sfera]?.cattura ?? 1))
 }
 
 // Lancia la sfera scelta nello zaino.
@@ -785,7 +995,10 @@ export function lancia(s: Stato, i: number, rnd: () => number = Math.random): St
   if (rnd() < probCattura(s, nem, i)) {
     const preso = { ...nem, hp: maxHp(nem) }
     const pieno = n.squadra.length >= SQUADRA_MAX
-    const r = registra(ricordaStadi({ ...n, modo: 'mappa', nemico: null }, preso), nem.sp, true)
+    const r = registra({ ...n, modo: 'mappa', nemico: null }, nem)
+    const sc = sconfiggi(r.s, nem.sp)
+    r.s = sc.s
+    r.righe.push(...sc.righe)
     const fine = pieno ? { ...r.s, box: [...r.s.box, preso] } : { ...r.s, squadra: [...r.s.squadra, preso] }
 
     return conLog(
@@ -831,7 +1044,8 @@ export function azione(s0: Stato, i: number, rnd: () => number = Math.random): S
     const nomeMossa = i === 0 ? 'Botta' : MOSSA[tipo]
     const { val, eff } = danno(io, nem, i === 0 ? 5 : 7, tipo, s.mondo, rnd)
     const hp = Math.max(0, nem.hp - val)
-    const n = conLog({ ...s, nemico: { ...nem, hp } }, `${nome(io)} usa ${nomeMossa}: -${val} PS.${nota(eff)}`)
+    const colpi = [{ chi: 'io' as const, mossa: i === 0 ? ('botta' as const) : tipo }]
+    const n = conLog({ ...s, nemico: { ...nem, hp }, colpi }, `${nome(io)} usa ${nomeMossa}: -${val} PS.${nota(eff)}`)
 
     return hp === 0 ? vittoria(n, rnd) : turnoNemico(n, rnd)
   }
@@ -966,80 +1180,83 @@ function tastoScambio(s: Stato, key: string): Stato {
   return scambia(s, sc.entra, n - 1)
 }
 
-// L apre il catalogo: una pagina per mondo con i suoi 9 Mostrini, presi o ancora da trovare.
+// L apre il catalogo: tutte le 135 forme, 27 per mondo. Ogni riga è una specie con le sue tre forme
+// (base, evoluta, finale), e ogni pagina mostra tre righe: tre pagine per mondo.
 export function apriCatalogo(s: Stato): Stato {
   return { ...s, catalogoVista: { mondo: s.mondo, sel: 0 } }
 }
 
-// Un mondo è sbloccato quando ci sei arrivato o il suo portale è aperto: dei suoi Mostrini mancanti
-// si vede il nome; nei mondi ancora chiusi restano ???.
-export const mondoSbloccato = (s: Stato, mondo: number) => mondo <= s.mondo || portaleAperto(s, mondo - 1)
+export const PER_PAGINA_CATALOGO = 9
+export const paginaCatalogo = (sel: number) => Math.floor(sel / PER_PAGINA_CATALOGO)
 
-// registrato: nel catalogo (sconfitto o catturato); preso: catturato, con la sfera;
-// visto: almeno incontrato, a colori; noto: se ne vede almeno il nome;
-// stadio: la forma più evoluta che hai avuto (-1 se non l'hai mai avuto).
-export type Voce = { sp: string; numero: number; registrato: boolean; preso: boolean; visto: boolean; noto: boolean; raro: boolean; stadio: number }
+// preso: catturato, con la sfera; visto: incontrato o sconfitto, a colori ma senza sfera.
+// Una forma né vista né catturata è solo un ? con ????? al posto del nome.
+export type Voce = { sp: string; st: number; numero: number; preso: boolean; visto: boolean; rarita: Rarita }
+
+export const SCONOSCIUTO = '?????'
 
 export function vociCatalogo(s: Stato, mondo: number): Voce[] {
   const tutte = Object.keys(SPECIE)
 
-  return specieDel(mondo).map(sp => {
-    const registrato = s.catalogo.includes(sp)
-    const preso = !!s.catturati?.includes(sp)
-    const visto = registrato || preso || !!s.visti?.includes(sp)
+  return specieDel(mondo).flatMap(sp =>
+    Array.from({ length: FORME }, (_, st) => {
+      const chiave = forma(sp, st)
+      const preso = s.catalogo.includes(chiave)
 
-    return {
-      sp,
-      numero: tutte.indexOf(sp) + 1,
-      registrato,
-      preso,
-      visto,
-      noto: visto || mondoSbloccato(s, mondo),
-      raro: MONDI[mondo]!.raro === sp,
-      stadio: s.stadi?.[sp] ?? (preso ? 0 : -1),
-    }
-  })
-}
-
-// La scheda del Mostrino scelto nel catalogo: la sua linea evolutiva se l'hai preso, dove cercarlo se manca.
-export function descrizione(v: Voce): string {
-  const d = SPECIE[v.sp]!
-  const num = '#' + String(v.numero).padStart(2, '0')
-  const dove = MONDI[d.mondo]!
-  if (!v.noto) return `${num} ???: vive ${dove.nel}, che non hai ancora aperto.`
-  if (v.visto && !v.registrato) {
-    return `${num} ${d.nome} (${d.tipo}): l'hai visto ma non ancora sconfitto né catturato. Vive ${dove.nel}${v.raro ? ' ed è raro' : ''}.`
-  }
-  if (!v.registrato) {
-    return `${num} ${d.nome} (${d.tipo}): manca! Vive ${dove.nel}${v.raro ? ' ed è raro' : ''}. Sconfiggilo o catturalo per registrarlo.`
-  }
-  const forme = ['la forma base', `${d.evo[0]}`, `${d.evo[1]}`]
-
-  return (
-    `${num} ${d.nome} (${d.tipo})${v.raro ? ', raro' : ''}: ${v.preso ? 'catturato' : 'sconfitto, non ancora catturato'}. ` +
-    `Si evolve in ${d.evo[0]} al Lv ${LIVELLI_EVO[0]} e in ${d.evo[1]} al Lv ${LIVELLI_EVO[1]}.` +
-    (v.stadio >= 0 ? ` La forma più evoluta che hai avuto: ${forme[v.stadio]}.` : '')
+      return { sp, st, numero: tutte.indexOf(sp) * FORME + st + 1, preso, visto: preso || !!s.visti?.includes(chiave), rarita: rarita(sp) }
+    }),
   )
 }
 
-// Frecce: sinistra e destra scorrono i Mostrini (e passano al mondo vicino), su e giù di una riga;
+// Quante forme hai catturato e visto in ogni mondo.
+export const contiCatalogo = (s: Stato) =>
+  MONDI.map((_, mondo) => {
+    const voci = vociCatalogo(s, mondo)
+
+    return { presi: voci.filter(v => v.preso).length, visti: voci.filter(v => v.visto).length, tot: voci.length }
+  })
+
+export const numeroVoce = (v: Voce) => '#' + String(v.numero).padStart(3, '0')
+
+// La scheda della forma scelta nel catalogo: da chi viene e in cosa si evolve se l'hai presa, dove cercarla se manca.
+export function descrizione(v: Voce): string {
+  const d = SPECIE[v.sp]!
+  const num = numeroVoce(v)
+  const chi = nomeForma(v.sp, v.st)
+  if (!v.visto) return `${num} ${SCONOSCIUTO}: non l'hai ancora incontrato. ${doveSiTrova(v.sp)}.`
+  // la bio e il tipo, con contro chi è forte (+10%) e contro chi è debole (-5%)
+  const bio = ` ${BIO[v.sp] ?? ''} Tipo ${d.tipo}: forte contro ${fortiContro(d.tipo).join(' e ')}, debole contro ${deboliContro(d.tipo).join(' e ')}.`
+  if (!v.preso) {
+    return `${num} ${chi} (${d.tipo}): l'hai visto ma non ancora catturato. ${doveSiTrova(v.sp)}${v.rarita !== 'comune' ? ` ed è ${v.rarita}` : ''}.${bio}`
+  }
+  const linea =
+    v.st === 0
+      ? `si evolve in ${d.evo[0]} al Lv ${LIVELLI_EVO[0]} e in ${d.evo[1]} al Lv ${LIVELLI_EVO[1]}`
+      : v.st === 1
+        ? `è l'evoluzione di ${d.nome}, e al Lv ${LIVELLI_EVO[1]} diventa ${d.evo[1]}`
+        : `è la forma finale di ${d.nome}`
+
+  return `${num} ${chi} (${d.tipo})${v.rarita !== 'comune' ? `, ${v.rarita}` : ''}: ${linea}.${bio}`
+}
+
+// Frecce: sinistra e destra scorrono le forme (e passano al mondo vicino), su e giù di una riga;
 // 1-5 saltano al mondo, L o 0 chiudono.
 function tastoCatalogo(s: Stato, key: string): Stato {
   const cv = s.catalogoVista!
   if (key === 'l' || key === '0' || key === 'backspace' || key === 'escape') return { ...s, catalogoVista: null }
   const n = Number(key)
   if (Number.isInteger(n) && n >= 1 && n <= MONDI.length) return { ...s, catalogoVista: { mondo: n - 1, sel: 0 } }
-  const per = specieDel(cv.mondo).length
+  const per = specieDel(cv.mondo).length * FORME
   const passo = key === 'right' || key === 'd' ? 1 : key === 'left' || key === 'a' ? -1 : 0
   if (passo !== 0) {
     const sel = cv.sel + passo
     if (sel >= 0 && sel < per) return { ...s, catalogoVista: { ...cv, sel } }
     const mondo = (cv.mondo + passo + MONDI.length) % MONDI.length
 
-    return { ...s, catalogoVista: { mondo, sel: passo > 0 ? 0 : specieDel(mondo).length - 1 } }
+    return { ...s, catalogoVista: { mondo, sel: passo > 0 ? 0 : specieDel(mondo).length * FORME - 1 } }
   }
-  if (key === 'down' || key === 's') return { ...s, catalogoVista: { ...cv, sel: (cv.sel + 3) % per } }
-  if (key === 'up' || key === 'w') return { ...s, catalogoVista: { ...cv, sel: (cv.sel + per - 3) % per } }
+  if (key === 'down' || key === 's') return { ...s, catalogoVista: { ...cv, sel: (cv.sel + FORME) % per } }
+  if (key === 'up' || key === 'w') return { ...s, catalogoVista: { ...cv, sel: (cv.sel + per - FORME) % per } }
 
   return s
 }
@@ -1116,8 +1333,34 @@ const PASSI: Record<string, [number, number]> = {
   up: [0, -1], w: [0, -1], down: [0, 1], s: [0, 1], left: [-1, 0], a: [-1, 0], right: [1, 0], d: [1, 0],
 }
 
+// I due traguardi del gioco: tutte le medaglie delle palestre, tutte le forme nel catalogo.
+export const tutteLeMedaglie = (s: Stato) => MONDI.every((_, i) => medaglia(s, i))
+export const catalogoCompleto = (s: Stato) => Object.keys(SPECIE).every(sp => Array.from({ length: FORME }, (_, st) => forma(sp, st)).every(k => s.catalogo.includes(k)))
+
+// Quando un tasto fa raggiungere un traguardo, parte la sua schermata di festa.
+export function festeggia(prima: Stato, dopo: Stato): Stato {
+  const nuove = [
+    ...(!tutteLeMedaglie(prima) && tutteLeMedaglie(dopo) ? (['medaglie'] as const) : []),
+    ...(!catalogoCompleto(prima) && catalogoCompleto(dopo) ? (['catalogo'] as const) : []),
+  ]
+
+  return nuove.length > 0 ? { ...dopo, feste: [...(dopo.feste ?? []), ...nuove] } : dopo
+}
+
+// I colpi da animare valgono per un turno solo: un tasto che cambia qualcosa li toglie,
+// e restano solo quelli del nuovo attacco.
 export function tasto(s: Stato, k: ClientKeyEvent): Stato {
+  const base = s.colpi ? { ...s, colpi: undefined } : s
+  const dopo = tastoGioco(base, k)
+
+  return dopo === base ? s : festeggia(s, dopo)
+}
+
+function tastoGioco(s: Stato, k: ClientKeyEvent): Stato {
   const key = k.key.toLowerCase()
+  // Mentre si guarda un'evoluzione o una festa, un tasto qualsiasi passa alla prossima (o torna al gioco).
+  if (s.evoluzioni && s.evoluzioni.length > 0) return { ...s, evoluzioni: s.evoluzioni.slice(1) }
+  if (s.feste && s.feste.length > 0) return { ...s, feste: s.feste.slice(1) }
   if (s.modo === 'inizio') {
     const i = ['1', '2', '3'].indexOf(key)
 
@@ -1127,14 +1370,19 @@ export function tasto(s: Stato, k: ClientKeyEvent): Stato {
     if (s.catalogoVista) return tastoCatalogo(s, key)
     if (s.scambio) return tastoScambio(s, key)
     const passo = PASSI[key]
-    // Il negozio e lo zaino non bloccano il movimento: un passo li chiude.
-    if (passo) return muovi(s.negozio || s.zaino ? { ...s, negozio: false, zaino: null } : s, passo[0], passo[1])
+    // Il negozio e lo zaino non bloccano il movimento: un passo li chiude, e tira su la lenza.
+    if (passo) {
+      const libero = s.negozio || s.zaino || s.pesca ? { ...s, negozio: false as const, zaino: null, pesca: null } : s
+
+      return s.inPalestra ? muoviInPalestra(libero, passo[0], passo[1]) : muovi(libero, passo[0], passo[1])
+    }
     if (s.negozio) return tastoNegozio(s, key)
     if (s.zaino) return tastoZaino(s, key)
     if (key === 'tab' || key === 'q') return ruotaSquadra(s)
     if (key === 'b') return apriScambio(s)
     if (key === 'l') return apriCatalogo(s)
     if (key === 'c') return apriZaino(s, 'cure')
+    if (key === 'f') return pesca(s)
     if (key === 'm') return alCentro(s) ? { ...s, negozio: 'scelta' } : conLog(s, 'Il negozio è al Centro cure.')
     if (key === 'p') return { ...statoMenu(), slot: s.slot }
 
@@ -1173,6 +1421,9 @@ const COL = {
 }
 
 const somma = (quante: number[]) => quante.reduce((a, q) => a + q, 0)
+
+// I colori delle rarità: azzurro il raro, viola l'epico, oro il leggendario.
+export const COLORE_RARITA: Record<Rarita, string> = { comune: '#c8c4e0', raro: '#4c9cff', epico: '#c46cd9', leggendario: '#ffc83c' }
 
 // I colori delle sfere, come nella pixel art.
 export const COLORE_SFERA = ['#e8483c', '#3c7ce8', '#f2c230', '#9c4cc8', '#ffd84c']
@@ -1354,6 +1605,56 @@ const Gioco: ClientModule<any, Stato> = (props: Props, surface) => {
     )
   }
 
+  // L'evoluzione: nell'app desktop l'animazione la disegna la pixel art, qui il racconto e il tasto per andare avanti.
+  const evo = s.evoluzioni?.[0]
+  if (evo) {
+    const prima = nomeForma(evo.sp, evo.da)
+    const dopo = nomeForma(evo.sp, evo.a)
+
+    return (
+      <Box flexDirection="column">
+        {testa}
+        <Box flexDirection="column" marginTop={1}>
+          <Text mono bold color={COL.io}>Cosa succede? {prima} si sta evolvendo...</Text>
+          {!grafica && <Text mono color="#ffffff">  ☁ ☁ ☁  POUF!  ☁ ☁ ☁</Text>}
+          <Text mono bold color={COLORE_TIPO[SPECIE[evo.sp]!.tipo]}>{prima} è diventato {dopo}!</Text>
+          {evo.a === 2 && <Text mono color={COL.io}>È la sua forma finale!</Text>}
+        </Box>
+        <Text mono dimColor>Premi un tasto per continuare{s.evoluzioni!.length > 1 ? ` (altre evoluzioni: ${s.evoluzioni!.length - 1})` : ''}</Text>
+      </Box>
+    )
+  }
+
+  // Le feste: tutte le medaglie, il catalogo completo. Nell'app desktop c'è l'animazione, qui il racconto.
+  const festa = !evo ? s.feste?.[0] : undefined
+  if (festa) {
+    return (
+      <Box flexDirection="column">
+        {testa}
+        <Box flexDirection="column" marginTop={1}>
+          {!grafica && <Text mono color={COL.io}>  ✦ · ✧ · ✦ · ✧ · ✦ · ✧ · ✦</Text>}
+          {festa === 'medaglie' ? (
+            <Box flexDirection="column">
+              <Text mono bold color={COL.io}>CAMPIONE DI MOSTRINI!</Text>
+              <Text mono>Hai vinto tutte e {MONDI.length} le medaglie:</Text>
+              {MONDI.map((m, i) => (
+                <Text mono key={'m' + i} color={COLORE_TIPO[m.palestra.tipo]}>  ◉ {m.palestra.medaglia} · {m.palestra.capo} · {m.nome}</Text>
+              ))}
+            </Box>
+          ) : (
+            <Box flexDirection="column">
+              <Text mono bold color={COL.io}>CATALOGO COMPLETO!</Text>
+              <Text mono>Hai catturato tutte le {Object.keys(SPECIE).length * FORME} forme di tutti i {Object.keys(SPECIE).length} Mostrini.</Text>
+              <Text mono>I leggendari dei cinque mondi: {MONDI.map((_, i) => nomeForma(raroDel(i, 'leggendario'), FORME - 1)).join(', ')}.</Text>
+            </Box>
+          )}
+          {!grafica && <Text mono color={COL.io}>  ✦ · ✧ · ✦ · ✧ · ✦ · ✧ · ✦</Text>}
+        </Box>
+        <Text mono dimColor>Premi un tasto per continuare</Text>
+      </Box>
+    )
+  }
+
   if (s.modo === 'lotta' && s.nemico) {
     const nem = s.nemico
     const io = s.squadra[0]
@@ -1361,8 +1662,18 @@ const Gioco: ClientModule<any, Stato> = (props: Props, surface) => {
     const bi = barra(io)
     const dn = SPECIE[nem.sp]
     const di = SPECIE[io.sp]
-    // ▲ o ▼: la mossa è potenziata o indebolita del 5% dal bioma del mondo.
-    const segno = (t: Tipo) => (bioma(s.mondo, t) > 1 ? ' ▲5%' : bioma(s.mondo, t) < 1 ? ' ▼5%' : '')
+    // Accanto a ogni mossa i suoi bonus e malus: il tipo contro l'avversario (+10% o -5%)
+    // e il bioma del mondo (+5% o -5%).
+    const segno = (t: Tipo) => {
+      const tipo = efficacia(t, dn.tipo)
+      const b = bioma(s.mondo, t)
+      const parti = [
+        tipo > 1 ? `tipo +10%` : tipo < 1 ? `tipo -5%` : '',
+        b > 1 ? 'bioma +5%' : b < 1 ? 'bioma -5%' : '',
+      ].filter(Boolean)
+
+      return parti.length > 0 ? ` (${parti.join(', ')})` : ''
+    }
     const voci = [
       'Botta' + segno('normale'),
       MOSSA[di.tipo] + segno(di.tipo),
@@ -1372,7 +1683,7 @@ const Gioco: ClientModule<any, Stato> = (props: Props, surface) => {
       s.allenatore ? 'Scappa (non da una sfida)' : 'Scappa',
     ]
     // La sfera accanto al nome solo per le specie catturate, non per quelle soltanto sconfitte.
-    const giaPreso = !!s.catturati?.includes(nem.sp)
+    const giaPreso = s.catalogo.includes(formaDi(nem))
     const palestra = s.allenatore?.palestra
 
     return (
@@ -1389,7 +1700,7 @@ const Gioco: ClientModule<any, Stato> = (props: Props, surface) => {
         <Box flexDirection="row" justifyContent="space-between" marginTop={1}>
           <Box flexDirection="column">
             <Text mono>
-              {giaPreso && <Text mono color="#e8483c">◓ </Text>}<Text mono bold>{nome(nem)}</Text> Lv {nem.lvl} <Text mono color={COLORE_TIPO[dn.tipo]}>{dn.tipo}</Text>
+              {giaPreso && <Text mono color="#e8483c">◓ </Text>}<Text mono bold>{nome(nem)}</Text> Lv {nem.lvl} <Text mono color={COLORE_TIPO[dn.tipo]}>{dn.tipo}</Text>{!comune(nem.sp) && <Text mono bold color={COLORE_RARITA[rarita(nem.sp)]}> {rarita(nem.sp)}</Text>}
             </Text>
             <Text mono>
               <Text mono color={bn.colore}>{bn.pieni}</Text>
@@ -1439,7 +1750,7 @@ const Gioco: ClientModule<any, Stato> = (props: Props, surface) => {
           </Box>
         ) : (
         <Box flexDirection="column" marginTop={1}>
-          {grafica && giaPreso && <Text mono dimColor>◓ {dn.nome}: l'hai già catturato</Text>}
+          {grafica && giaPreso && <Text mono dimColor>◓ {nome(nem)} è già nel tuo catalogo</Text>}
           <Text mono dimColor>Bioma {MONDI[s.mondo]!.nome}: {affinita(s.mondo)}</Text>
           {voci.map((v, i) => (
             <Text mono key={'v' + i} inverse={i === s.scelta}>
@@ -1458,20 +1769,26 @@ const Gioco: ClientModule<any, Stato> = (props: Props, surface) => {
     const cv = s.catalogoVista
     const voci = vociCatalogo(s, cv.mondo)
     const scelta = voci[cv.sel]
+    const pagina = paginaCatalogo(cv.sel)
+    const pagine = Math.ceil(voci.length / PER_PAGINA_CATALOGO)
+    // Nel terminale le tre righe della pagina: ogni riga è una specie, con le sue tre forme.
+    const righeVoci = Array.from({ length: PER_PAGINA_CATALOGO / FORME }, (_, r) => voci.slice(pagina * PER_PAGINA_CATALOGO + r * FORME, pagina * PER_PAGINA_CATALOGO + (r + 1) * FORME)).filter(r => r.length > 0)
 
     return (
       <Box flexDirection="column">
         {testa}
         <Text mono bold color={COL.io}>
-          Catalogo · {cv.mondo + 1}/{MONDI.length} {MONDI[cv.mondo]!.nome} {voci.filter(v => v.preso).length}/{voci.length} · in tutto {s.catalogo.length}/{Object.keys(SPECIE).length}
+          Catalogo · {cv.mondo + 1}/{MONDI.length} {MONDI[cv.mondo]!.nome} {voci.filter(v => v.preso).length}/{voci.length} · pagina {pagina + 1}/{pagine} · in tutto {s.catalogo.length}/{Object.keys(SPECIE).length * FORME}
         </Text>
         {!grafica && (
           <Box flexDirection="column" marginTop={1}>
-            {voci.map((v, i) => (
-              <Text mono key={'k' + i} inverse={i === cv.sel} dimColor={!v.preso}>
-                {' '}{v.preso ? '◓' : v.visto ? '○' : '·'} #{String(v.numero).padStart(2, '0')} {v.noto ? SPECIE[v.sp]!.nome : '???'}
-                {v.noto && <Text mono color={COLORE_TIPO[SPECIE[v.sp]!.tipo]}> {SPECIE[v.sp]!.tipo}</Text>}
-                {v.preso ? '' : v.visto ? ' · visto' : ' · manca'}{v.raro && v.noto ? ' · raro' : ''}{' '}
+            {righeVoci.map((riga, r) => (
+              <Text mono key={'k' + r}>
+                {riga.map((v, i) => (
+                  <Text mono key={'v' + i} inverse={pagina * PER_PAGINA_CATALOGO + r * FORME + i === cv.sel} dimColor={!v.preso}>
+                    {i > 0 ? ' → ' : ' '}{v.preso ? '◓' : v.visto ? '○' : '?'} {numeroVoce(v)} {v.visto ? nomeForma(v.sp, v.st) : SCONOSCIUTO}{' '}
+                  </Text>
+                ))}
               </Text>
             ))}
           </Box>
@@ -1481,7 +1798,61 @@ const Gioco: ClientModule<any, Stato> = (props: Props, surface) => {
             <Text mono wrap="wrap">{descrizione(scelta)}</Text>
           </Box>
         )}
-        <Text mono dimColor>Frecce scegli · 1-{MONDI.length} cambia mondo · L o 0 chiude il catalogo</Text>
+        {!grafica && (
+          <Text mono dimColor>
+            {contiCatalogo(s).map((c, i) => `${i + 1} ${MONDI[i]!.nome} ${c.presi}/${c.tot}`).join(' · ')}
+          </Text>
+        )}
+        <Text mono dimColor>Frecce scegli · 1-{MONDI.length} cambia mondo · ◓ catturato · ○ visto · ? mai visto · L o 0 chiude</Text>
+      </Box>
+    )
+  }
+
+  // Lo zaino delle cure aperto con C, sulla mappa e in palestra.
+  const zainoCure = s.zaino && (
+    <Box flexDirection="column" marginTop={1}>
+      <Text mono bold color={COL.io}>Quale cura usi su {nome(s.squadra[0]!)} ({s.squadra[0]!.hp}/{maxHp(s.squadra[0]!)} PS)? Premi il numero (0 annulla)</Text>
+      {righeZaino(s).map(r => (
+        <Text mono key={'z' + r.i}>
+          <Text mono bold>{r.k + 1}</Text> <Text mono color={r.colore}>●</Text> {r.nome} ×{r.q} · {r.dettaglio}
+        </Text>
+      ))}
+    </Box>
+  )
+
+  if (s.inPalestra) {
+    const m = MONDI[s.mondo]!
+    const vinte = vinteIn(s, s.mondo)
+    const tot = allievi(s.mondo)
+    const tinta = COLORE_TIPO[m.palestra.tipo]
+    const salone = Array.from({ length: SALONE_ALTO }, (_, y) => (
+      <Text mono key={'g' + y}>
+        {Array.from({ length: saloneLargo(s.mondo) }, (_, x) => {
+          if (x === s.inPalestra!.x && y === s.inPalestra!.y) return <Text mono key={'c' + x} bold color={COL.io}>@ </Text>
+          const c = casellaSalone(s, x, y)
+          if (c === '#') return <Text mono key={'c' + x} dimColor>██</Text>
+          if (c === '<') return <Text mono key={'c' + x} color={COL.io}>{'<='}</Text>
+          if (c === '=') return <Text mono key={'c' + x} color={COL.centro}>==</Text>
+          if (c === 'o') return <Text mono key={'c' + x} dimColor>()</Text>
+          if (c === 'a') return <Text mono key={'c' + x} bold color={tinta}>A </Text>
+          if (c === 'b') return <Text mono key={'c' + x} dimColor>a </Text>
+          if (c === 'K') return <Text mono key={'c' + x} bold color={COL.io}>K </Text>
+
+          return <Text mono key={'c' + x} dimColor>· </Text>
+        })}
+      </Text>
+    ))
+
+    return (
+      <Box flexDirection="column">
+        {testa}
+        <Text mono bold color={COL.palestra}>
+          Palestra {m.del} · {vinte > tot ? `${m.palestra.medaglia} vinta` : vinte < tot ? `allievi battuti ${vinte}/${tot}, poi ${m.palestra.capo}` : `tocca a ${m.palestra.capo}`}
+        </Text>
+        {!grafica && <Box flexDirection="column" marginTop={1}>{salone}</Box>}
+        {registro}
+        {zainoCure}
+        {!s.zaino && <Text mono dimColor>Frecce ← → sul tappeto · fermati davanti a un allievo per sfidarlo · la porta a sinistra esce · C cure · L catalogo</Text>}
       </Box>
     )
   }
@@ -1492,6 +1863,7 @@ const Gioco: ClientModule<any, Stato> = (props: Props, surface) => {
       if (x === s.x && y === s.y) return <Text mono key={'c' + x} bold color={COL.io}>@ </Text>
       if (t === '#') return <Text mono key={'c' + x} color={COL.albero}>^^</Text>
       if (t === ',') return <Text mono key={'c' + x} color={COL.erba}>,,</Text>
+      if (t === '~' && s.pesca?.x === x && s.pesca.y === y) return <Text mono key={'c' + x} bold color="#ff6b6b">o~</Text>
       if (t === '~') return <Text mono key={'c' + x} color={COL.acqua}>~~</Text>
       if (t === 'C') return <Text mono key={'c' + x} bold color={COL.centro}>C </Text>
       if (t === 'P') return <Text mono key={'c' + x} bold color={COL.portale}>()</Text>
@@ -1572,25 +1944,19 @@ const Gioco: ClientModule<any, Stato> = (props: Props, surface) => {
           <Text mono dimColor>Premi il numero per comprare · 0 torna indietro · M chiude · muoviti per uscire</Text>
         </Box>
       ) : s.zaino ? (
-        <Box flexDirection="column" marginTop={1}>
-          <Text mono bold color={COL.io}>Quale cura usi su {nome(s.squadra[0]!)} ({s.squadra[0]!.hp}/{maxHp(s.squadra[0]!)} PS)? Premi il numero (0 annulla)</Text>
-          {righeZaino(s).map(r => (
-            <Text mono key={'z' + r.i}>
-              <Text mono bold>{r.k + 1}</Text> <Text mono color={r.colore}>●</Text> {r.nome} ×{r.q} · {r.dettaglio}
-            </Text>
-          ))}
-        </Box>
+        zainoCure
       ) : (
         s.box.length > 0 && <Text mono dimColor>Box: {s.box.map(m => nome(m) + ' Lv' + m.lvl).join(', ')}</Text>
       )}
       {alCentro(s) && !s.scambio && !s.negozio && <Text mono color={COL.centro}>Sei al Centro cure: M apre il negozio</Text>}
+      {acquaVicina(s) && !s.scambio && !s.negozio && <Text mono color={COL.acqua}>Sei sulla riva: F per pescare i Mostrini d'acqua</Text>}
       {!s.scambio && !s.negozio && !s.zaino && (
         <Text mono dimColor>
           Bioma {MONDI[s.mondo]!.nome}: {affinita(s.mondo)} · Lv {MONDI[s.mondo]!.lvlMin}-{MONDI[s.mondo]!.lvlMax} · Palestra (G){' '}
           {medaglia(s, s.mondo) ? `vinta: ${MONDI[s.mondo]!.palestra.medaglia}` : vinteIn(s, s.mondo) < allievi(s.mondo) ? `${vinteIn(s, s.mondo)}/${allievi(s.mondo)} allievi` : `tocca a ${MONDI[s.mondo]!.palestra.capo}`}
         </Text>
       )}
-      {!s.scambio && !s.negozio && !s.zaino && <Text mono dimColor>Frecce/WASD muovi · Q capofila · B box · L catalogo · C cure ({somma(s.cure)}) · P menu{portaleAperto(s) ? ' · portale aperto' : ''}</Text>}
+      {!s.scambio && !s.negozio && !s.zaino && <Text mono dimColor>Frecce/WASD muovi · Q capofila · B box · L catalogo · C cure ({somma(s.cure)}) · F pesca · P menu{portaleAperto(s) ? ' · portale aperto' : ''}</Text>}
     </Box>
   )
 }
