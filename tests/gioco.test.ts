@@ -2,17 +2,22 @@ import { test, expect } from 'claude-code/testing'
 import {
   statoIniziale, scegliIniziale, muovi, azione, efficacia, apriScambio, normalizza, portaleAperto, specieDel, catalogoDel, usaCura, tasto, cambiaInLotta, compra, rilascia, sfida, lancia, tastoMenu, statoMenu, CENTRO,
   MAPPA, MONDI, SPECIE, SFERE, CURE, SFERE_MAX, CURE_MAX, VERSIONE, bioma, livelloNel, evolve, nome, maxHp, stadio, vociCatalogo, descrizione,
-  articoli, probCattura, allievi, vinteIn, medaglia, squadraCapo,
+  articoli, probCattura, allievi, vinteIn, medaglia, squadraCapo, contiCatalogo, numeroVoce, FORME,
+  muoviInPalestra, casellaSalone, postoSfidante, saloneLargo, TAPPETO, ANELLO, fortiContro, deboliContro, BIO,
+  festeggia, tutteLeMedaglie, catalogoCompleto, rarita, comune, nellAcqua, nellErba, pesca, acquaVicina, CATTURA_RARITA,
 } from '../hooks/gioco.tsx'
 import type { Stato } from '../hooks/gioco.tsx'
-import { DISEGNI, svgPer } from '../hooks/grafica.ts'
+import { DISEGNI, svgPer, misureDi, riempie } from '../hooks/grafica.ts'
 
 test('la mappa è rettangolare e ogni specie ha una mossa', () => {
   for (const m of MONDI) for (const riga of m.mappa) expect(riga.length).toBe(MAPPA[0]!.length)
   expect(MONDI.length).toBe(5)
-  MONDI.forEach((m, i) => {
-    expect(specieDel(i).length).toBe(9)
-    expect(specieDel(i)).toContain(m.raro)
+  MONDI.forEach((_, i) => {
+    // 9 comuni nella Prateria e 8 negli altri mondi, più un raro, un epico e un leggendario;
+    // ogni mondo ha almeno un Mostrino d'acqua comune da pescare
+    expect(specieDel(i).length).toBe(i === 4 ? 12 : 11)
+    for (const r of ['raro', 'epico', 'leggendario'] as const) expect(specieDel(i).filter(sp => rarita(sp) === r).length).toBe(1)
+    expect(nellAcqua(i).some(comune)).toBe(true)
   })
   // ogni specie ha il suo disegno in pixel art, con il cappello largo 12
   for (const sp of Object.keys(SPECIE)) expect(DISEGNI[sp]?.cappello.every(r => r.length === 12)).toBe(true)
@@ -54,63 +59,100 @@ function vinci(s: Stato): Stato {
   return n
 }
 
-test('in palestra si battono n+2 allievi e poi il capopalestra, che dà la medaglia', () => {
+// Cammina a destra sul tappeto della palestra finché non parte una lotta (o non si va più avanti).
+function avanza(s: Stato): Stato {
+  let n = s
+  for (let i = 0; i < 40 && n.modo === 'mappa'; i++) {
+    const dopo = muoviInPalestra(n, 1, 0, () => 0.5)
+    if (dopo === n) break
+    n = dopo
+  }
+
+  return n
+}
+
+test('in palestra si entra in un salone: n+2 allievi in fila, poi il capopalestra', () => {
   expect(allievi(0)).toBe(3)
   expect(allievi(4)).toBe(7)
   let s = scegliIniziale(statoIniziale(), 0)
   s = { ...s, squadra: [{ sp: 'braciotto', lvl: 60, xp: 0, hp: 999 }] }
-  // la palestra della Prateria è in (12,1): ci si entra da (12,2)
+  // la palestra della Prateria è in (12,1): ci si entra da (12,2) e si resta davanti alla porta
   expect(MONDI[0]!.mappa[1]![12]).toBe('G')
+  s = muovi({ ...s, x: 12, y: 2 }, 0, -1, () => 0.5)
+  expect(s.inPalestra).toEqual({ x: 1, y: TAPPETO })
+  expect([s.x, s.y]).toEqual([12, 2])
+  expect(s.modo).toBe('mappa')
+  // il salone: porta a sinistra, allievi sul tappeto, capopalestra in fondo
+  expect(casellaSalone(s, 0, TAPPETO)).toBe('<')
+  expect(casellaSalone(s, postoSfidante(0), TAPPETO)).toBe('a')
+  expect(casellaSalone(s, postoSfidante(allievi(0)), TAPPETO)).toBe('K')
+  expect(saloneLargo(0)).toBe(postoSfidante(allievi(0)) + 2)
+  // in su e in giù non ci si muove: si cammina solo sul tappeto
+  expect(muoviInPalestra(s, 0, -1)).toBe(s)
   for (let k = 0; k < allievi(0); k++) {
-    s = muovi({ ...s, x: 12, y: 2 }, 0, -1, () => 0.5)
+    s = avanza(s)
+    // la sfida parte fermandosi davanti all'allievo
+    expect(s.modo).toBe('lotta')
+    expect(s.inPalestra!.x).toBe(postoSfidante(k) - 1)
     expect(s.allenatore?.palestra).toBe('allievo')
     // niente fuga e niente cattura in palestra
     expect(azione(s, 5, () => 0).modo).toBe('lotta')
     expect(lancia(s, 0, () => 0).modo).toBe('lotta')
     s = vinci(s)
     expect(vinteIn(s, 0)).toBe(k + 1)
+    // l'allievo battuto si sposta di lato e lascia passare
+    expect(casellaSalone(s, postoSfidante(k), TAPPETO)).toBe('=')
   }
   expect(portaleAperto(s)).toBe(false)
-  s = muovi({ ...s, x: 12, y: 2 }, 0, -1, () => 0.5)
+  s = avanza(s)
   expect(s.allenatore?.palestra).toBe('capo')
   expect(s.allenatore?.nome).toBe('Capopalestra Flora')
   expect(s.allenatore!.squadra.length + 1).toBe(squadraCapo(0).length)
   const monete = s.monete
   s = vinci(s)
   expect(medaglia(s, 0)).toBe(true)
-  // la medaglia da sola non basta: serve anche il catalogo della Prateria completo
+  // la medaglia da sola non basta: servono anche tutti i Mostrini della Prateria, sconfitti o catturati
   expect(portaleAperto(s)).toBe(false)
-  expect(portaleAperto({ ...s, catalogo: specieDel(0) })).toBe(true)
+  expect(portaleAperto({ ...s, sconfitti: specieDel(0) })).toBe(true)
   expect(s.monete).toBeGreaterThan(monete)
   expect(s.log.join(' ')).toContain('Medaglia Foglia')
-  // ci si può tornare, ma la medaglia ce l'hai già
-  expect(muovi({ ...s, x: 12, y: 2 }, 0, -1).modo).toBe('mappa')
+  // il capopalestra resta in fondo e non si passa; dalla porta si esce
+  expect(avanza(s).modo).toBe('mappa')
+  let fuori = s
+  for (let i = 0; i < 40 && fuori.inPalestra; i++) fuori = muoviInPalestra(fuori, -1, 0)
+  expect(fuori.inPalestra).toBeNull()
+  expect([fuori.x, fuori.y]).toEqual([12, 2])
+  // rientrando, la medaglia ce l'hai già
+  const dentro = muovi(fuori, 0, -1)
+  expect(dentro.log.join(' ')).toContain('Hai già la Medaglia Foglia')
   // il capopalestra chiude con il raro del mondo, più forte degli altri
   for (let m = 0; m < MONDI.length; m++) {
     const squadra = squadraCapo(m)
-    expect(squadra.at(-1)!.sp).toBe(MONDI[m]!.raro)
+    expect(rarita(squadra.at(-1)!.sp)).toBe('raro')
+    expect(squadra.slice(0, -1).every(x => comune(x.sp))).toBe(true)
     expect(squadra.every(x => x.lvl > MONDI[m]!.lvlMax)).toBe(true)
   }
 })
 
-test('il portale si apre con la medaglia della palestra e il catalogo del mondo completo', () => {
+test('il portale si apre con la medaglia della palestra e tutti i Mostrini del mondo sconfitti o catturati', () => {
   let s = scegliIniziale(statoIniziale(), 0)
-  s = { ...s, x: 17, y: 8, catalogo: specieDel(0) }
-  // solo il catalogo: chiuso, e il messaggio dice che manca la medaglia
+  s = { ...s, x: 17, y: 8, sconfitti: specieDel(0) }
+  // solo i Mostrini: chiuso, e il messaggio dice che manca la medaglia
   const chiuso = muovi(s, 1, 0)
   expect(chiuso.x).toBe(17)
   expect(chiuso.log.at(-1)).toContain('Medaglia Foglia')
   // solo la medaglia: chiuso, e il messaggio dice quanti Mostrini mancano
-  const senza = muovi({ ...s, catalogo: ['braciotto'], palestre: [allievi(0) + 1, 0, 0, 0, 0] }, 1, 0)
+  const senza = muovi({ ...s, sconfitti: ['braciotto'], palestre: [allievi(0) + 1, 0, 0, 0, 0] }, 1, 0)
   expect(senza.x).toBe(17)
-  expect(senza.log.at(-1)).toContain('8 Mostrini')
+  expect(senza.log.at(-1)).toContain('10 Mostrini')
   s = { ...s, palestre: [allievi(0) + 1, 0, 0, 0, 0] }
   s = muovi(s, 1, 0, () => 0.99)
   expect(s.mondo).toBe(1)
-  expect(catalogoDel(s)).toEqual({ presi: 9, tot: 18 })
+  // sulle Vette il catalogo conta le forme di due mondi: 2 x 33
+  expect(catalogoDel(s)).toEqual({ presi: 1, tot: 66 })
   // il P delle Vette Gelate è in (18,1): chiuso finché non vinci la loro palestra
   expect(muovi({ ...s, x: 17, y: 1 }, 1, 0, () => 0.99).mondo).toBe(1)
-  const deserto = muovi({ ...s, x: 17, y: 1, palestre: [4, allievi(1) + 1, 0, 0, 0], catalogo: [...specieDel(0), ...specieDel(1)] }, 1, 0, () => 0.99)
+  const deserto = muovi({ ...s, x: 17, y: 1, palestre: [4, allievi(1) + 1, 0, 0, 0], sconfitti: [...specieDel(0), ...specieDel(1)] }, 1, 0, () => 0.99)
   expect(deserto.mondo).toBe(2)
   // l'R del Deserto in (1,1) riporta alle Vette
   expect(muovi({ ...deserto, x: 2, y: 1 }, -1, 0, () => 0.99).mondo).toBe(1)
@@ -260,6 +302,19 @@ test('dal livello 15 un Mostrino si evolve', () => {
   expect(nome(io)).toBe('Bracione')
   expect(maxHp(io)).toBeGreaterThan(prima)
   expect(s.log.at(-1)).toContain('si evolve in Bracione')
+  // la forma nuova entra nel catalogo come catturata
+  expect(s.catalogo).toContain('braciotto:1')
+  // e si vede l'animazione: il vecchio, la nuvola con POUF!, il nuovo; un tasto qualsiasi la chiude
+  expect(s.evoluzioni).toEqual([{ sp: 'braciotto', da: 0, a: 1 }])
+  const scena = svgPer(s)
+  expect(scena.animato).toBe(true)
+  expect(scena.source).toContain('<animate')
+  expect(scena.source).toContain('POUF!')
+  expect(scena.source.length).toBeLessThan(131072)
+  const dopo = tasto(s, { key: 'x' })
+  expect(dopo.evoluzioni).toEqual([])
+  expect(dopo.modo).toBe(s.modo)
+  expect(svgPer(dopo).animato).toBeUndefined()
   // sotto il 15 niente evoluzione, e chi è già evoluto resta com'è
   expect(evolve({ sp: 'goccetto', lvl: 14, xp: 0, hp: 10 }, []).evo).toBeUndefined()
   expect(evolve(io, [])).toBe(io)
@@ -302,46 +357,55 @@ test('sconfiggere o catturare mette un Mostrino nel catalogo; catturarlo gli dà
   s = { ...s, modo: 'lotta', nemico: { sp: 'piumino', lvl: 2, xp: 0, hp: 1 } }
   s = azione(s, 0, () => 0.5)
   expect(s.modo).toBe('mappa')
-  expect(s.catalogo).toContain('piumino')
-  expect(s.catturati).not.toContain('piumino')
-  s = lancia({ ...s, modo: 'lotta', nemico: { sp: 'piumino', lvl: 2, xp: 0, hp: 1 } }, 0, () => 0)
-  expect(s.catturati).toContain('piumino')
-  // catturarlo senza averlo mai sconfitto lo registra lo stesso
+  // lo sconfitto è visto e conta per il portale, ma senza sfera finché non lo catturi
+  expect(s.visti).toContain('piumino')
+  expect(s.sconfitti).toContain('piumino')
+  expect(s.catalogo).not.toContain('piumino')
+  // catturarlo senza averlo mai sconfitto conta lo stesso
   const preso = lancia({ ...scegliIniziale(statoIniziale(), 0), modo: 'lotta', nemico: { sp: 'zampetto', lvl: 2, xp: 0, hp: 1 } }, 0, () => 0)
+  expect(preso.sconfitti).toContain('zampetto')
   expect(preso.catalogo).toContain('zampetto')
-  expect(preso.catturati).toContain('zampetto')
+  // l'ultimo Mostrino che manca, con la medaglia già vinta, apre il portale
+  const quasi = { ...scegliIniziale(statoIniziale(), 0), palestre: [allievi(0) + 1, 0, 0, 0, 0], sconfitti: specieDel(0).filter(sp => sp !== 'piumino'), modo: 'lotta' as const, nemico: { sp: 'piumino', lvl: 2, xp: 0, hp: 1 } }
+  const aperto = azione(quasi, 0, () => 0.5)
+  expect(portaleAperto(aperto)).toBe(true)
+  expect(aperto.log.join(' ')).toContain('portale')
+  // ogni forma ha la sua voce: catturare un evoluto registra la forma evoluta, non la base
+  const evoluto = lancia({ ...s, modo: 'lotta', nemico: { sp: 'ondina', lvl: 16, xp: 0, hp: 1, evo: 1 } }, 0, () => 0)
+  expect(evoluto.catalogo).toContain('ondina:1')
+  expect(evoluto.catalogo).not.toContain('ondina')
   // anche solo incontrarlo lo rende visto
   const incontro = muovi(muovi(scegliIniziale(statoIniziale(), 0), 1, 0, () => 0.5), 1, 0, () => 0.01)
   expect(incontro.visti).toContain(incontro.nemico!.sp)
 })
 
-test('il catalogo mostra chi hai preso, chi hai visto e chi manca, mondo per mondo', () => {
+test('il catalogo ha una voce per ogni forma: 33 per mondo (36 nelle Rovine), 168 in tutto', () => {
   let s = scegliIniziale(statoIniziale(), 0)
-  s = { ...s, catalogo: ['braciotto', 'zampetto'], catturati: ['braciotto'], visti: ['braciotto', 'zampetto', 'piumino'], stadi: { braciotto: 1 } }
+  s = { ...s, catalogo: ['braciotto', 'braciotto:1', 'zampetto'], visti: ['braciotto', 'braciotto:1', 'braciotto:2', 'zampetto', 'piumino'] }
   s = tasto(s, { key: 'l' })
   expect(s.catalogoVista).toEqual({ mondo: 0, sel: 0 })
   const voci = vociCatalogo(s, 0)
-  expect(voci.length).toBe(9)
-  expect(voci.filter(v => v.registrato).map(v => v.sp)).toEqual(['braciotto', 'zampetto'])
-  expect(voci.filter(v => v.preso).map(v => v.sp)).toEqual(['braciotto'])
-  expect(voci.filter(v => v.visto && !v.registrato).map(v => v.sp)).toEqual(['piumino'])
-  // la forma più evoluta avuta: Braciotto è arrivato a Bracione, Zampetto solo sconfitto
-  expect(voci[0]!.stadio).toBe(1)
-  expect(descrizione(voci[0]!)).toContain('catturato')
-  expect(descrizione(voci.find(v => v.sp === 'zampetto')!)).toContain('sconfitto')
-  // nella Prateria i mancanti hanno il nome; nel Deserto, ancora chiuso, restano ???
-  expect(voci.every(v => v.noto)).toBe(true)
-  expect(vociCatalogo(s, 2).some(v => v.noto)).toBe(false)
+  expect(voci.length).toBe(11 * FORME)
+  expect(MONDI.flatMap((_, m) => vociCatalogo(s, m)).length).toBe(168)
+  // ogni riga è una specie con le sue tre forme, numerate di seguito
+  expect(voci.slice(0, 3).map(v => [v.sp, v.st, numeroVoce(v)])).toEqual([['braciotto', 0, '#001'], ['braciotto', 1, '#002'], ['braciotto', 2, '#003']])
+  expect(voci.filter(v => v.preso).map(v => `${v.sp}:${v.st}`)).toEqual(['braciotto:0', 'braciotto:1', 'zampetto:0'])
+  expect(voci.filter(v => v.visto && !v.preso).map(v => `${v.sp}:${v.st}`)).toEqual(['braciotto:2', 'piumino:0'])
+  // chi non è né visto né catturato è solo un ? con ????? al posto del nome
   expect(descrizione(voci[0]!)).toContain('Bracione')
-  expect(descrizione(voci[2]!)).toContain('manca')
-  expect(descrizione(voci.find(v => v.sp === 'piumino')!)).toContain('visto')
-  expect(descrizione(vociCatalogo(s, 2)[0]!)).toContain('???')
-  // frecce: destra scorre, giù salta una riga, oltre l'ultimo si passa al mondo dopo
+  expect(descrizione(voci[1]!)).toContain('evoluzione di Braciotto')
+  expect(descrizione(voci[2]!)).toContain('Pirodrago')
+  expect(descrizione(voci[3]!)).toContain('?????')
+  expect(descrizione(voci[3]!)).not.toContain('Fumarello')
+  expect(descrizione(vociCatalogo(s, 2)[0]!)).toContain('?????')
+  expect(contiCatalogo(s)[0]).toEqual({ presi: 3, visti: 5, tot: 33 })
+  expect(catalogoDel(s)).toEqual({ presi: 3, tot: 33 })
+  // frecce: destra scorre, giù salta una riga (una specie), oltre l'ultima forma si passa al mondo dopo
   s = tasto(s, { key: 'right' })
   expect(s.catalogoVista?.sel).toBe(1)
   s = tasto(s, { key: 'down' })
   expect(s.catalogoVista?.sel).toBe(4)
-  s = { ...s, catalogoVista: { mondo: 0, sel: 8 } }
+  s = { ...s, catalogoVista: { mondo: 0, sel: 32 } }
   s = tasto(s, { key: 'right' })
   expect(s.catalogoVista).toEqual({ mondo: 1, sel: 0 })
   s = tasto(s, { key: '5' })
@@ -351,20 +415,76 @@ test('il catalogo mostra chi hai preso, chi hai visto e chi manca, mondo per mon
   expect(tasto(s, { key: 'l' }).catalogoVista).toBeNull()
 })
 
+test('in fondo al catalogo la linea evolutiva della forma scelta, con la sua bio', () => {
+  const s = { ...scegliIniziale(statoIniziale(), 0), catalogo: ['braciotto'], visti: ['braciotto', 'braciotto:1'] }
+  const giu = (sel: number) => svgPer({ ...s, catalogoVista: { mondo: 0, sel } }).source.split('<rect x="14" y="424"')[1]!
+  // la forma scelta è l'evoluta: la linea mostra base, evoluta e la finale ancora da scoprire, e la bio
+  const linea = giu(1)
+  expect(linea).toContain('Braciotto')
+  expect(linea).toContain('Bracione')
+  expect(linea).toContain('?????')
+  expect(linea).toContain('#002 Bracione')
+  expect(linea).toContain('fiammella')
+  expect(linea).toContain('Lv 35')
+  // un Mostrino mai visto non svela né nome né bio, solo dove vive
+  const ignoto = giu(3)
+  expect(ignoto).not.toContain('Fumarello')
+  expect(ignoto).toContain('Prateria')
+})
+
+test('le feste: tutte le medaglie e il catalogo completo', () => {
+  const tutte = Object.keys(SPECIE).flatMap(sp => [sp, `${sp}:1`, `${sp}:2`])
+  const s = scegliIniziale(statoIniziale(), 0)
+  const medaglieTutte = MONDI.map((_, i) => allievi(i) + 1)
+  expect(tutteLeMedaglie({ ...s, palestre: medaglieTutte })).toBe(true)
+  expect(catalogoCompleto({ ...s, catalogo: tutte })).toBe(true)
+  expect(catalogoCompleto({ ...s, catalogo: tutte.slice(1) })).toBe(false)
+  // la festa parte solo quando il traguardo si raggiunge, non dopo
+  const prima = { ...s, palestre: medaglieTutte.map((v, i) => (i === 4 ? v - 1 : v)), catalogo: tutte.slice(1) }
+  const dopo = festeggia(prima, { ...prima, palestre: medaglieTutte, catalogo: tutte })
+  expect(dopo.feste).toEqual(['medaglie', 'catalogo'])
+  expect(festeggia(dopo, dopo).feste).toEqual(['medaglie', 'catalogo'])
+  // ognuna ha la sua schermata animata, nel limite del pannello; un tasto passa alla prossima
+  const medaglie = svgPer(dopo)
+  expect(medaglie.animato).toBe(true)
+  expect(medaglie.source).toContain('CAMPIONE DI MOSTRINI!')
+  expect(medaglie.source.length).toBeLessThan(131072)
+  const secondo = tasto(dopo, { key: 'x' })
+  expect(secondo.feste).toEqual(['catalogo'])
+  expect(svgPer(secondo).source).toContain('CATALOGO COMPLETO!')
+  expect(svgPer(secondo).source.length).toBeLessThan(131072)
+  expect(tasto(secondo, { key: 'x' }).feste).toEqual([])
+  // battere l'ultimo capopalestra con le altre medaglie già vinte fa partire la festa
+  let ultimo = { ...prima, mondo: 4, squadra: [{ sp: 'braciotto', lvl: 80, xp: 0, hp: 9999 }], inPalestra: { x: postoSfidante(allievi(4)) - 2, y: TAPPETO } }
+  ultimo = tasto(ultimo, { key: 'right' })
+  expect(ultimo.allenatore?.palestra).toBe('capo')
+  while (ultimo.modo === 'lotta') ultimo = tasto({ ...ultimo, nemico: { ...ultimo.nemico!, hp: 1 }, scelta: 0 }, { key: '1' })
+  expect(ultimo.feste).toContain('medaglie')
+})
+
 test('il menu mostra la versione', () => {
   expect(VERSIONE).toMatch(/^\d+\.\d+\.\d+$/)
   expect(svgPer(statoMenu()).source).toContain(`versione ${VERSIONE}`)
 })
 
 test('ogni disegno sta nel limite del pannello', () => {
-  const tutte = Object.keys(SPECIE)
-  const base = { ...scegliIniziale(statoIniziale(), 0), catalogo: tutte }
+  // il caso più pesante: tutte le forme catturate, quindi ogni scheda del catalogo col suo disegno
+  const tutte = Object.keys(SPECIE).flatMap(sp => [sp, `${sp}:1`, `${sp}:2`])
+  const base = { ...scegliIniziale(statoIniziale(), 0), catalogo: tutte, visti: tutte }
   const disegni = [svgPer({ ...base, modo: 'menu' }), svgPer(statoIniziale())]
   MONDI.forEach((_, mondo) => {
     const forte = { sp: specieDel(mondo)[0]!, lvl: 40, xp: 0, hp: 50, evo: 2 }
     disegni.push(svgPer({ ...base, mondo }))
-    disegni.push(svgPer({ ...base, mondo, catalogoVista: { mondo, sel: 0 } }))
+    for (const sel of [0, 9, 18]) disegni.push(svgPer({ ...base, mondo, catalogoVista: { mondo, sel } }))
+    disegni.push(svgPer({ ...base, mondo, inPalestra: { x: 5, y: TAPPETO }, palestre: [2, 2, 2, 2, 2] }))
     disegni.push(svgPer({ ...base, mondo, modo: 'lotta', squadra: [forte, forte, forte], nemico: forte, lancio: true, lanciata: 4, allenatore: { nome: 'Custode Elio', squadra: [forte, forte], palestra: 'capo' } }))
+    disegni.push(svgPer({ ...base, mondo, catalogoVista: { mondo, sel: specieDel(mondo).length * FORME - 1 } }))
+    // i colpi animati di ogni tipo, insieme alla Botta del nemico
+    for (const mossa of ANELLO) {
+      const lotta = svgPer({ ...base, mondo, modo: 'lotta', squadra: [forte], nemico: forte, colpi: [{ chi: 'io', mossa }, { chi: 'nemico', mossa: 'botta' }] })
+      expect(lotta.animato).toBe(true)
+      disegni.push(lotta)
+    }
   })
   for (const d of disegni) {
     expect(d.source.startsWith('<svg')).toBe(true)
@@ -372,11 +492,101 @@ test('ogni disegno sta nel limite del pannello', () => {
   }
 })
 
-test('i tipi si battono a vicenda in cerchio', () => {
-  expect(efficacia('fuoco', 'erba')).toBe(1.5)
-  expect(efficacia('erba', 'acqua')).toBe(1.5)
-  expect(efficacia('acqua', 'fuoco')).toBe(1.5)
-  expect(efficacia('fuoco', 'acqua')).toBe(0.6)
+// Un rnd che dà i valori in fila, poi sempre 0.5.
+const inFila = (...valori: number[]) => () => valori.shift() ?? 0.5
+
+test('i Mostrini d\'acqua si trovano solo pescando, dalla riva', () => {
+  for (let m = 0; m < MONDI.length; m++) {
+    expect(nellErba(m).every(sp => SPECIE[sp]!.tipo !== 'acqua')).toBe(true)
+    expect(nellAcqua(m).length).toBeGreaterThan(0)
+  }
+  // nella Prateria in (10,6) c'è l'acqua a destra; dal Centro cure no
+  let s = { ...scegliIniziale(statoIniziale(), 0), x: 10, y: 6 }
+  expect(acquaVicina(s)).toEqual({ x: 11, y: 6 })
+  expect(acquaVicina(scegliIniziale(statoIniziale(), 0))).toBeNull()
+  expect(tasto(scegliIniziale(statoIniziale(), 0), { key: 'f' }).log.at(-1)).toContain('riva')
+  // non abbocca niente: il galleggiante resta in acqua finché non ti muovi
+  const vuota = pesca(s, inFila(0.9))
+  expect(vuota.modo).toBe('mappa')
+  expect(vuota.pesca).toEqual({ x: 11, y: 6 })
+  expect(svgPer(vuota).source).toContain('#e8483c')
+  expect(tasto(vuota, { key: 'left' }).pesca).toBeNull()
+  // abbocca: un Mostrino d'acqua, e con un po' di fortuna il leggendario Carpadoro
+  s = pesca(s, inFila(0.1, 0.5))
+  expect(s.modo).toBe('lotta')
+  expect(SPECIE[s.nemico!.sp]!.tipo).toBe('acqua')
+  expect(s.log.at(-1)).toContain('Hai pescato')
+  const oro = pesca({ ...s, modo: 'mappa', nemico: null }, inFila(0.1, 0.01, 0))
+  expect(oro.nemico!.sp).toBe('carpadoro')
+  expect(oro.log.at(-1)).toContain('leggendario')
+  // nel catalogo i Mostrini d'acqua dicono dove pescarli
+  expect(descrizione(vociCatalogo(s, 0).find(v => v.sp === 'ondina')!)).toContain('Si pesca nella Prateria')
+})
+
+test('rari, epici e leggendari: più rari, più forti, più difficili da catturare', () => {
+  // dall'erba della Prateria, con il tiro giusto, esce l'epico Trifoglio, due livelli più su
+  const s = { ...scegliIniziale(statoIniziale(), 0), x: 4, y: 2 }
+  const epico = muovi(s, 1, 0, inFila(0.01, 0.5, 0.02, 0))
+  expect(epico.nemico!.sp).toBe('trifoglio')
+  expect(rarita('trifoglio')).toBe('epico')
+  expect(epico.nemico!.lvl).toBe(MONDI[0]!.lvlMin + 3 + 2)
+  // il leggendario della Prateria si pesca soltanto: nell'erba quel tiro dà un comune
+  expect(comune(muovi(s, 1, 0, inFila(0.01, 0.5, 0.001, 0)).nemico!.sp)).toBe(true)
+  // la cattura: il leggendario si prende il 60% meno di un comune
+  const m = { lvl: 5, xp: 0, hp: 0 }
+  const p = (sp: string) => probCattura(s, { ...m, sp, hp: maxHp({ ...m, sp }) }, 0)
+  expect(Math.round((p('carpadoro') / p('goccetto')) * 100) / 100).toBe(CATTURA_RARITA.leggendario)
+  expect(p('trifoglio')).toBeLessThan(p('scintillo'))
+  expect(p('scintillo')).toBeLessThan(p('zampetto'))
+  // in lotta e nel catalogo la rarità si vede
+  expect(svgPer(epico).source).toContain('#c46cd9')
+  expect(descrizione({ ...vociCatalogo(s, 0).find(v => v.sp === 'trifoglio')!, visto: true })).toContain('epico')
+})
+
+test('in lotta le mosse si animano: chi attacca si muove, sul colpito l\'effetto; la Botta fa SBAM', () => {
+  let s = { ...scegliIniziale(statoIniziale(), 0), x: 4, y: 2 }
+  s = muovi(s, 1, 0, inFila(0.01, 0.5))
+  expect(s.modo).toBe('lotta')
+  expect(svgPer(s).animato).toBeUndefined()
+  // 2 Fiammata, poi il nemico risponde con la Botta
+  s = { ...s, nemico: { ...s.nemico!, hp: 999 } }
+  const turno = azione(s, 1, () => 0.5)
+  expect(turno.colpi).toEqual([{ chi: 'io', mossa: 'fuoco' }, { chi: 'nemico', mossa: 'botta' }])
+  const disegno = svgPer(turno)
+  expect(disegno.animato).toBe(true)
+  expect(disegno.source).toContain('SBAM!')
+  expect(disegno.source).toContain('animateTransform')
+  // fermo o animato, il pannello riceve le stesse misure: lo schermo non cambia grandezza;
+  // nel riquadro animato il disegno riempie il riquadro, senza misure sue
+  expect(misureDi(disegno.source)).toEqual({ largo: 512, alto: 320 })
+  expect(misureDi(svgPer(s).source)).toEqual(misureDi(disegno.source))
+  expect(riempie(disegno.source)).toMatch(/^<svg [^>]*viewBox="0 0 640 400" width="100%" height="100%"/)
+  // un tasto che non cambia niente lascia l'animazione, uno che cambia qualcosa la toglie
+  expect(tasto(turno, { key: 'x' })).toBe(turno)
+  expect(tasto(turno, { key: 'down' }).colpi).toBeUndefined()
+  // con la Botta del giocatore il colpo è 'botta', uguale per tutti
+  expect(tasto({ ...s, scelta: 0 }, { key: '1' }).colpi?.[0]).toEqual({ chi: 'io', mossa: 'botta' })
+})
+
+test('i tipi si battono a vicenda in cerchio, tutti in equilibrio', () => {
+  // acqua batte fuoco: +10% per l'acqua, -5% per il fuoco che attacca l'acqua
+  expect(efficacia('acqua', 'fuoco')).toBe(1.1)
+  expect(efficacia('fuoco', 'acqua')).toBe(0.95)
+  expect(efficacia('fuoco', 'erba')).toBe(1.1)
+  expect(efficacia('fuoco', 'fuoco')).toBe(1)
+  // ogni tipo: forte contro 2 e debole contro 2 quando attacca, e lo stesso quando difende
+  for (const t of ANELLO) {
+    expect(fortiContro(t).length).toBe(2)
+    expect(deboliContro(t).length).toBe(2)
+    expect(ANELLO.filter(a => efficacia(a, t) > 1).length).toBe(2)
+    expect(ANELLO.filter(a => efficacia(a, t) < 1).length).toBe(2)
+    // se A batte B, allora B attaccando A è svantaggiato
+    for (const d of fortiContro(t)) expect(efficacia(d, t)).toBe(0.95)
+  }
+  // ogni specie ha la sua bio, e la scheda del catalogo mostra il tipo
+  for (const sp of Object.keys(SPECIE)) expect(BIO[sp]?.length).toBeGreaterThan(10)
+  const s = { ...scegliIniziale(statoIniziale(), 0) }
+  expect(descrizione(vociCatalogo(s, 0)[0]!)).toContain('Tipo fuoco: forte contro')
 })
 
 test('scelta, incontro nell erba, cattura', () => {
@@ -428,7 +638,7 @@ test('squadra di 3 al massimo, le catture in più vanno nel box', () => {
 
 test('le partite vecchie si caricano: box, zaino a caselle, catalogo, palestre', () => {
   const vecchia: any = { ...scegliIniziale(statoIniziale(), 0) }
-  for (const campo of ['box', 'mondo', 'visti', 'palestre', 'catturati', 'stadi', 'versioneCatalogo']) delete vecchia[campo]
+  for (const campo of ['box', 'mondo', 'visti', 'palestre', 'sconfitti']) delete vecchia[campo]
   vecchia.squadra = ['piumino', 'zampetto', 'ondina', 'gelino'].map(sp => ({ sp, lvl: 3, xp: 0, hp: 5 }))
   Object.assign(vecchia, { sfere: 7, megaSfere: 2, cure: 3, cureForti: 1 })
   vecchia.catalogo = ['braciotto', 'piumino', 'zampetto', 'ondina', 'gelino', 'germoglio']
@@ -438,15 +648,11 @@ test('le partite vecchie si caricano: box, zaino a caselle, catalogo, palestre',
   expect(s.mondo).toBe(0)
   expect(s.sfere).toEqual([7, 2, 0, 0, 0])
   expect(s.cure).toEqual([3, 1, 0, 0, 0])
-  // il catalogo tiene tutte le specie di prima (catturate o sconfitte); la sfera va a quelle che hai ancora
-  expect([...s.catalogo].sort()).toEqual(['braciotto', 'gelino', 'germoglio', 'ondina', 'piumino', 'zampetto'])
-  expect([...(s.catturati ?? [])].sort()).toEqual(['gelino', 'ondina', 'piumino', 'zampetto'])
+  // nel catalogo restano le specie che hai ancora; le altre diventano viste, ma contano come sconfitte per il portale
+  expect([...s.catalogo].sort()).toEqual(['gelino', 'ondina', 'piumino', 'zampetto'])
   expect(s.visti).toContain('germoglio')
-  // una partita della 0.8.0 recupera nel catalogo i Mostrini rimasti tra i visti
-  const ottoZero: any = { ...normalizza(vecchia), catalogo: ['gelino'], visti: ['gelino', 'piumino'], versioneCatalogo: undefined, catturati: undefined }
-  const recuperata = normalizza(ottoZero)
-  expect(recuperata.catalogo).toContain('piumino')
-  expect(recuperata.catturati).toContain('gelino')
+  expect(s.visti).toContain('braciotto')
+  expect(s.sconfitti).toEqual(expect.arrayContaining(['braciotto', 'germoglio', 'gelino', 'ondina', 'piumino', 'zampetto']))
   // chi era già sulle Vette ha la medaglia della Prateria, ma deve vincere quella delle Vette
   expect(medaglia(normalizza({ ...vecchia, mondo: 1 }), 0)).toBe(true)
   expect(medaglia(normalizza({ ...vecchia, mondo: 1 }), 1)).toBe(false)
@@ -546,7 +752,7 @@ for (const surface of ['terminal', 'desktop'] as const) {
     expect(salvati[0].partite[0].squadra[0].sp).toBe('goccetto')
     // L apre il catalogo della Prateria e lo richiude
     await ui.key({ in: 'gioco', key: 'l' })
-    expect(await ui.find({ in: 'gioco', text: /Catalogo · 1\/5 Prateria 1\/9/ })).toBeTruthy()
+    expect(await ui.find({ in: 'gioco', text: /Catalogo · 1\/5 Prateria 1\/33/ })).toBeTruthy()
     await ui.key({ in: 'gioco', key: 'l' })
     expect(await ui.find({ in: 'gioco', text: /L catalogo/ })).toBeTruthy()
     // un passo e poi P: la partita si salva con la nuova posizione e si torna al menu
